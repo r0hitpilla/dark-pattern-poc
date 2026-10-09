@@ -109,12 +109,19 @@ def ask_json(prompt: str, *, task: str, schema: dict | None = None, images=None,
             return json.load(f)
     start = time.time()
     try:
-        r = requests.post(f"{OLLAMA}/api/chat", json=body, timeout=300)
-        r.raise_for_status()
-        out = _parse(r.json()["message"]["content"])
-        missing = [k for k in (schema or {}).get("required", []) if k not in out]
-        if missing:
-            raise ValueError(f"model reply missing {missing}")
+        for attempt in (0, 1):      # one retry with a different seed if the reply is malformed
+            try:
+                r = requests.post(f"{OLLAMA}/api/chat", json=body if attempt == 0 else
+                                  {**body, "options": {**body["options"], "seed": 11}}, timeout=300)
+                r.raise_for_status()
+                out = _parse(r.json()["message"]["content"])
+                missing = [k for k in (schema or {}).get("required", []) if k not in out]
+                if missing:
+                    raise ValueError(f"model reply missing {missing}")
+                break
+            except (ValueError, KeyError, AttributeError):
+                if attempt:
+                    raise
     except Exception:
         STATS["failures"] += 1
         raise
@@ -176,11 +183,12 @@ def is_confirm_shaming(text: str) -> dict:
     if available():
         try:
             j = ask_json(
-                "You audit e-commerce UI copy for 'confirm shaming': wording on the option a shopper must click to "
-                "DECLINE an offer that puts words in the shopper's mouth to make declining feel foolish, guilty or "
-                "shameful. Examples of confirm shaming: 'No thanks, I don't like free stuff', 'I'd rather pay full "
-                "price'. NOT confirm shaming: 'No thanks', 'Continue without protection', 'Skip', 'Not now'.\n"
-                "This text appears as the decline option next to a paid offer: \"" + text + "\"",
+                "You audit e-commerce UI copy for 'confirm shaming': wording on the option a user clicks to DECLINE an "
+                "offer or to LEAVE (cancel, unsubscribe) that puts words in the user's mouth to make that choice feel "
+                "foolish, guilty or shameful. Examples of confirm shaming: 'No thanks, I don't like free stuff', 'I'd "
+                "rather pay full price'. NOT confirm shaming: plain statements of the action, e.g. 'No thanks', 'Continue "
+                "without protection', 'Unsubscribe', 'Yes, cancel', 'Remove', 'Skip', 'Not now'.\n"
+                "Option text: \"" + text + "\"",
                 task="confirm-shaming wording", schema=SHAME_SCHEMA)
             return {"hit": bool(j["confirm_shaming"]), "reason": j.get("reason", ""), "by": backend_name()}
         except Exception:

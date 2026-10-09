@@ -162,6 +162,11 @@ def create_app(mode: str = "dark") -> Flask:
         sku = request.form["sku"]
         qty = int(request.form.get("qty", 1))
         cart = s["cart"]
+        if not dark:   # an honest shop cannot sell more than it has
+            have = sum(l["qty"] for l in cart if l["sku"] == sku)
+            if have + qty > inventory[sku]:
+                qty = max(inventory[sku] - have, 0)
+                s["note"] = f"Only {inventory[sku]} available, so we adjusted the quantity."
         for line in cart:
             if line["sku"] == sku:
                 line["qty"] += qty
@@ -188,6 +193,10 @@ def create_app(mode: str = "dark") -> Flask:
         if not s["cart"]:
             return page("Cart", "<h1>Your cart is empty</h1>")
         rows, sub = cart_rows(s)
+        note = s.pop("note", "")
+        if note:
+            session.modified = True
+            rows = f'<tr><td colspan="2" class="urgency">{note}</td></tr>' + rows
         if dark:
             actions = """
             <form method="post" action="/cart/checkout"><input type="hidden" name="plus" value="1">
