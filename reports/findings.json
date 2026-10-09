@@ -2,8 +2,8 @@
   "llm_backend": "Ollama \u00b7 qwen3.5:35b-a3b (local)",
   "llm_stats": {
     "calls": 36,
-    "cached": 31,
-    "seconds": 18.9,
+    "cached": 33,
+    "seconds": 12.4,
     "failures": 0,
     "by_task": {
       "consent wording": {
@@ -13,13 +13,13 @@
       },
       "navigation": {
         "calls": 18,
-        "cached": 17,
-        "seconds": 1.8
+        "cached": 18,
+        "seconds": 0.0
       },
       "claim extraction": {
         "calls": 6,
         "cached": 3,
-        "seconds": 5.9
+        "seconds": 12.4
       },
       "confirm-shaming wording": {
         "calls": 2,
@@ -28,8 +28,8 @@
       },
       "VLM screenshot baseline": {
         "calls": 8,
-        "cached": 7,
-        "seconds": 11.3
+        "cached": 8,
+        "seconds": 0.0
       }
     },
     "text_model": "qwen3.5:35b-a3b",
@@ -411,7 +411,7 @@
       "observations": [
         {
           "session": 1,
-          "observed_at": 1791553878.5212507,
+          "observed_at": 1791562434.9109843,
           "timer": "14:58",
           "stock_claim": 2,
           "extracted_by": "Ollama \u00b7 qwen3.5:35b-a3b (local)",
@@ -419,11 +419,11 @@
             "Deal ends in 14:58",
             "Hurry! Only 2 left in stock"
           ],
-          "implied_deadline": 1791554776.5212507
+          "implied_deadline": 1791563332.9109843
         },
         {
           "session": 2,
-          "observed_at": 1791553882.885254,
+          "observed_at": 1791562439.278047,
           "timer": "14:58",
           "stock_claim": 2,
           "extracted_by": "Ollama \u00b7 qwen3.5:35b-a3b (local)",
@@ -431,11 +431,11 @@
             "Deal ends in 14:58",
             "Hurry! Only 2 left in stock"
           ],
-          "implied_deadline": 1791554780.885254
+          "implied_deadline": 1791563337.278047
         },
         {
           "session": 3,
-          "observed_at": 1791553887.2027814,
+          "observed_at": 1791562443.5938458,
           "timer": "14:58",
           "stock_claim": 2,
           "extracted_by": "Ollama \u00b7 qwen3.5:35b-a3b (local)",
@@ -443,7 +443,7 @@
             "Deal ends in 14:58",
             "Hurry! Only 2 left in stock"
           ],
-          "implied_deadline": 1791554785.2027814
+          "implied_deadline": 1791563341.5938458
         }
       ],
       "timer": {
@@ -988,46 +988,46 @@
       "observations": [
         {
           "session": 1,
-          "observed_at": 1791553900.5860467,
-          "timer": "1:59:30",
+          "observed_at": 1791562455.0932453,
+          "timer": "1:59:32",
           "stock_claim": 3,
           "extracted_by": "Ollama \u00b7 qwen3.5:35b-a3b (local)",
           "quotes": [
-            "Deal ends in 1:59:30",
+            "Deal ends in 1:59:32",
             "Only 3 left in stock"
           ],
-          "implied_deadline": 1791561070.5860467
+          "implied_deadline": 1791569627.0932453
         },
         {
           "session": 2,
-          "observed_at": 1791553906.9032128,
-          "timer": "1:59:24",
+          "observed_at": 1791562467.844533,
+          "timer": "1:59:19",
           "stock_claim": 3,
           "extracted_by": "Ollama \u00b7 qwen3.5:35b-a3b (local)",
           "quotes": [
-            "Deal ends in 1:59:24",
+            "Deal ends in 1:59:19",
             "Only 3 left in stock"
           ],
-          "implied_deadline": 1791561070.9032128
+          "implied_deadline": 1791569626.844533
         },
         {
           "session": 3,
-          "observed_at": 1791553913.137265,
-          "timer": "1:59:17",
+          "observed_at": 1791562474.1602616,
+          "timer": "1:59:13",
           "stock_claim": 3,
           "extracted_by": "Ollama \u00b7 qwen3.5:35b-a3b (local)",
           "quotes": [
-            "Deal ends in 1:59:17",
+            "Deal ends in 1:59:13",
             "Only 3 left in stock"
           ],
-          "implied_deadline": 1791561070.137265
+          "implied_deadline": 1791569627.1602616
         }
       ],
       "timer": {
-        "deadline_spread_s": 0.8,
-        "elapsed_s": 12.6,
+        "deadline_spread_s": 0.3,
+        "elapsed_s": 19.1,
         "verdict": "consistent",
-        "explanation": "Every session pointed to the same deadline (\u00b11s): the countdown is genuine."
+        "explanation": "Every session pointed to the same deadline (\u00b10s): the countdown is genuine."
       },
       "stock": {
         "claim": 3,
@@ -1097,7 +1097,7 @@
       "Neither persona was enrolled in a subscription.",
       "Optional consent ended Off for both personas; wording is plain.",
       "Decline options next to offers use neutral wording.",
-      "Urgency claim is genuine: Every session pointed to the same deadline (\u00b11s): the countdown is genuine.",
+      "Urgency claim is genuine: Every session pointed to the same deadline (\u00b10s): the countdown is genuine.",
       "Scarcity claim is genuine: Claim of 3 matches inventory (3).",
       "Join and cancel take similar effort (2 vs 2 actions).",
       "App prompt respects dismissal.",

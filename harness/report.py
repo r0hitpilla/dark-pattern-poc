@@ -8,23 +8,30 @@ from .oracles import CCPA
 
 TPL = Template(r"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dark Pattern Evidence Report</title>
+<title>Intent-Divergence Evidence Report</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
 <style>
-:root{--bg:#f7f6f3;--card:#fff;--ink:#1c1c1c;--mute:#6b6b6b;--line:#e4e2dc;--accent:#b4441f;
- --ok:#2f6f4f;--okbg:#e8f2ec;--bad:#a8321e;--badbg:#f8e9e5;--warn:#8a6100;--warnbg:#f7efd9}
-@media (prefers-color-scheme:dark){:root{--bg:#161615;--card:#20201e;--ink:#ecebe7;--mute:#a09f99;--line:#34332f;
- --okbg:#1d3328;--ok:#7fc49c;--badbg:#3a211b;--bad:#f09a84;--warnbg:#3a3019;--warn:#e3c06a;--accent:#f09a84}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Inter",system-ui,sans-serif}
-.wrap{max-width:1040px;margin:0 auto;padding:32px 16px 64px}
+/* Layout: single reading column; evidence tables scroll inside their own frames */
+:root{--bg:#f4f5f2;--card:#fff;--ink:#1b1e1c;--mute:#5f6661;--line:#dfe3de;--accent:#a6431f;
+ --ok:#2f6f4f;--okbg:#e6f1ea;--bad:#a8321e;--badbg:#f8e8e3;--warn:#7f5a00;--warnbg:#f6eed6;
+ --sans:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141715;--card:#1d211e;--ink:#e9ece8;--mute:#a1a8a2;
+ --line:#323833;--okbg:#1b3226;--ok:#86c9a2;--badbg:#3a211b;--bad:#f09a84;--warnbg:#383017;--warn:#e3c06a;--accent:#f09a84;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141715;--card:#1d211e;--ink:#e9ece8;--mute:#a1a8a2;
+ --line:#323833;--okbg:#1b3226;--ok:#86c9a2;--badbg:#3a211b;--bad:#f09a84;--warnbg:#383017;--warn:#e3c06a;--accent:#f09a84;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--sans)}
+h1,h2,h3{text-wrap:balance}.kpi b,td,.pill{font-variant-numeric:tabular-nums}.kpi b{font-family:var(--mono)}
+summary:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:32px 16px 64px}.lead,.wrap>p{max-width:70ch}
 h1{font-size:28px;margin:0 0 4px;letter-spacing:-.01em}h2{font-size:19px;margin:40px 0 12px;padding-top:8px;border-top:2px solid var(--ink)}
 .sub{color:var(--mute)}.lead{font-size:17px;margin:18px 0 0;max-width:760px}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:22px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:22px}
 .kpi{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
 .kpi b{display:block;font-size:26px;font-variant-numeric:tabular-nums}.kpi span{color:var(--mute);font-size:13px}
 table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden}
 th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px}
 th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute);font-weight:600}
-td.c{text-align:center}.scroll{overflow-x:auto}
+td.c{text-align:center}.scroll{overflow-x:auto}.scroll>table{min-width:640px}
 .pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:600;white-space:nowrap}
 .hit{background:var(--okbg);color:var(--ok)}.miss{background:var(--badbg);color:var(--bad)}
 .fp{background:var(--badbg);color:var(--bad)}.quiet{color:var(--mute)}
@@ -136,9 +143,9 @@ consent state, stock or click counts depends on model output, and no screen leav
 <h2>Journey traces</h2>
 {% for shop in [dark, clean] %}{% for j in shop.journeys %}
 <details><summary>{{ shop.name }} · {{ j.persona }} persona · {{ j.trace|length }} steps · payable ₹{{ j.payable }}</summary>
-<table class="trace"><tr><th>#</th><th>Screen</th><th>What the persona did</th></tr>
+<div class="scroll"><table class="trace"><tr><th>#</th><th>Screen</th><th>What the persona did</th></tr>
 {% for s in j.trace %}<tr><td>{{ s.step + 1 }}</td><td>{{ s.url }}</td><td>{{ s.action }}{% if s.detail %} — {{ s.detail }}{% endif %}</td></tr>{% endfor %}
-</table></details>{% endfor %}{% endfor %}
+</table></div></details>{% endfor %}{% endfor %}
 
 <h2>Method and limits</h2>
 <ul>

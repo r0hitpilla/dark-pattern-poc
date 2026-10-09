@@ -1,22 +1,29 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dark Pattern Evidence Report</title>
+<title>Intent-Divergence Evidence Report</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
 <style>
-:root{--bg:#f7f6f3;--card:#fff;--ink:#1c1c1c;--mute:#6b6b6b;--line:#e4e2dc;--accent:#b4441f;
- --ok:#2f6f4f;--okbg:#e8f2ec;--bad:#a8321e;--badbg:#f8e9e5;--warn:#8a6100;--warnbg:#f7efd9}
-@media (prefers-color-scheme:dark){:root{--bg:#161615;--card:#20201e;--ink:#ecebe7;--mute:#a09f99;--line:#34332f;
- --okbg:#1d3328;--ok:#7fc49c;--badbg:#3a211b;--bad:#f09a84;--warnbg:#3a3019;--warn:#e3c06a;--accent:#f09a84}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Inter",system-ui,sans-serif}
-.wrap{max-width:1040px;margin:0 auto;padding:32px 16px 64px}
+/* Layout: single reading column; evidence tables scroll inside their own frames */
+:root{--bg:#f4f5f2;--card:#fff;--ink:#1b1e1c;--mute:#5f6661;--line:#dfe3de;--accent:#a6431f;
+ --ok:#2f6f4f;--okbg:#e6f1ea;--bad:#a8321e;--badbg:#f8e8e3;--warn:#7f5a00;--warnbg:#f6eed6;
+ --sans:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141715;--card:#1d211e;--ink:#e9ece8;--mute:#a1a8a2;
+ --line:#323833;--okbg:#1b3226;--ok:#86c9a2;--badbg:#3a211b;--bad:#f09a84;--warnbg:#383017;--warn:#e3c06a;--accent:#f09a84;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141715;--card:#1d211e;--ink:#e9ece8;--mute:#a1a8a2;
+ --line:#323833;--okbg:#1b3226;--ok:#86c9a2;--badbg:#3a211b;--bad:#f09a84;--warnbg:#383017;--warn:#e3c06a;--accent:#f09a84;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--sans)}
+h1,h2,h3{text-wrap:balance}.kpi b,td,.pill{font-variant-numeric:tabular-nums}.kpi b{font-family:var(--mono)}
+summary:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:32px 16px 64px}.lead,.wrap>p{max-width:70ch}
 h1{font-size:28px;margin:0 0 4px;letter-spacing:-.01em}h2{font-size:19px;margin:40px 0 12px;padding-top:8px;border-top:2px solid var(--ink)}
 .sub{color:var(--mute)}.lead{font-size:17px;margin:18px 0 0;max-width:760px}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:22px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:22px}
 .kpi{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
 .kpi b{display:block;font-size:26px;font-variant-numeric:tabular-nums}.kpi span{color:var(--mute);font-size:13px}
 table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden}
 th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px}
 th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute);font-weight:600}
-td.c{text-align:center}.scroll{overflow-x:auto}
+td.c{text-align:center}.scroll{overflow-x:auto}.scroll>table{min-width:640px}
 .pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:600;white-space:nowrap}
 .hit{background:var(--okbg);color:var(--ok)}.miss{background:var(--badbg);color:var(--bad)}
 .fp{background:var(--badbg);color:var(--bad)}.quiet{color:var(--mute)}
@@ -35,7 +42,7 @@ ul.ev{margin:6px 0 0;padding-left:18px}ul.ev li{margin:2px 0}
 details{margin-top:10px}summary{cursor:pointer;color:var(--mute);font-size:13px}
 @media (max-width:640px){.eo{grid-template-columns:1fr}}
 </style></head><body><div class="wrap">
-<div class="sub">Intent-Divergence Testing · proof of concept · 09 Oct 2026 19:22</div>
+<div class="sub">Intent-Divergence Testing · proof of concept · 09 Oct 2026 21:44</div>
 <h1>Dark Pattern Evidence Report</h1>
 <p class="lead">Behavioural testing found <b>9 of 9</b> seeded dark patterns in the test shop with
 <b>0</b> false alarms on the honest control. A single-screen recognition baseline found 6 of 9
@@ -199,7 +206,7 @@ sentence alone, with no site-specific goal words.</p>
 <tr><td>LLM agent, plain-English goal: join / cancel actions</td>
 <td>2 / 6 · 3.0×</td>
 <td>2 / 2 · 1.0×</td></tr>
-<tr><td>Countdown deadline spread across sessions</td><td>8.7 s</td><td>0.8 s</td></tr>
+<tr><td>Countdown deadline spread across sessions</td><td>8.7 s</td><td>0.3 s</td></tr>
 <tr><td>Claims read by</td><td>Ollama · qwen3.5:35b-a3b (local)</td><td>Ollama · qwen3.5:35b-a3b (local)</td></tr>
 <tr><td>Stock claim vs inventory</td><td>2 vs 140</td><td>3 vs 3</td></tr>
 <tr><td>Nag reappearances after dismissal</td><td>5 / 5</td><td>0 / 5</td></tr>
@@ -208,7 +215,7 @@ sentence alone, with no site-specific goal words.</p>
 <h2>Honest control · Kartiq (honest)</h2>
 
 <p>No findings. Checks that passed:</p>
-<ul class="ok"><li>No unrequested items in either persona's order; no paid option pre-ticked.</li><li>Final payable (₹539) matches the price and fees shown on the first screen.</li><li>Neither persona was enrolled in a subscription.</li><li>Optional consent ended Off for both personas; wording is plain.</li><li>Decline options next to offers use neutral wording.</li><li>Urgency claim is genuine: Every session pointed to the same deadline (±1s): the countdown is genuine.</li><li>Scarcity claim is genuine: Claim of 3 matches inventory (3).</li><li>Join and cancel take similar effort (2 vs 2 actions).</li><li>App prompt respects dismissal.</li><li>Careful and hurried personas reached identical outcomes (zero manipulation delta).</li></ul>
+<ul class="ok"><li>No unrequested items in either persona's order; no paid option pre-ticked.</li><li>Final payable (₹539) matches the price and fees shown on the first screen.</li><li>Neither persona was enrolled in a subscription.</li><li>Optional consent ended Off for both personas; wording is plain.</li><li>Decline options next to offers use neutral wording.</li><li>Urgency claim is genuine: Every session pointed to the same deadline (±0s): the countdown is genuine.</li><li>Scarcity claim is genuine: Claim of 3 matches inventory (3).</li><li>Join and cancel take similar effort (2 vs 2 actions).</li><li>App prompt respects dismissal.</li><li>Careful and hurried personas reached identical outcomes (zero manipulation delta).</li></ul>
 
 <h2>Baseline detections</h2>
 <div class="scroll"><table><tr><th>Shop</th><th>Category</th><th>Why the baseline flagged it</th></tr>
@@ -226,44 +233,44 @@ sentence alone, with no site-specific goal words.</p>
 consent state, stock or click counts depends on model output, and no screen leaves this machine.</p>
 <div class="scroll"><table><tr><th>Task</th><th>What the model does</th><th>What keeps it honest</th><th>Calls (cached)</th><th>Model time</th></tr>
 <tr><td>navigation</td><td>Agent persona chooses checkboxes and clicks from the plain-English intent</td><td>End state read from the order and the account system of record, not from the model</td>
-<td>18 (17)</td><td>1.8 s</td></tr><tr><td>claim extraction</td><td>Finds urgency / scarcity claims however they are phrased</td><td>Quotes must appear verbatim on the page; deadline arithmetic and inventory comparison are deterministic</td>
-<td>6 (3)</td><td>5.9 s</td></tr><tr><td>consent wording</td><td>Works out what ticking a consent box means</td><td>Consent outcome read from account state</td>
+<td>18 (18)</td><td>0.0 s</td></tr><tr><td>claim extraction</td><td>Finds urgency / scarcity claims however they are phrased</td><td>Quotes must appear verbatim on the page; deadline arithmetic and inventory comparison are deterministic</td>
+<td>6 (3)</td><td>12.4 s</td></tr><tr><td>consent wording</td><td>Works out what ticking a consent box means</td><td>Consent outcome read from account state</td>
 <td>2 (2)</td><td>0.0 s</td></tr><tr><td>confirm-shaming wording</td><td>Judges decline copy shown next to an offer</td><td>Reported as “Judged”, for human review</td>
 <td>2 (2)</td><td>0.0 s</td></tr><tr><td>VLM screenshot baseline</td><td>Comparison only: what a state-of-the-art screenshot model would flag</td><td>Not used for any harness finding</td>
-<td>8 (7)</td><td>11.3 s</td></tr>
+<td>8 (8)</td><td>0.0 s</td></tr>
 </table></div>
 <p>LLM navigator on Kartiq (dark): <span class="pill hit">same end state as scripted careful persona</span>
 </p><p>LLM navigator on Kartiq (honest): <span class="pill hit">same end state as scripted careful persona</span>
 </p>
 <p class="method">Text model: qwen3.5:35b-a3b · vision model: qwen3.5:35b-a3b ·
-36 calls, 31 from cache, 0 failed (fell back to heuristics).</p>
+36 calls, 33 from cache, 0 failed (fell back to heuristics).</p>
 
 <h2>Journey traces</h2>
 
 <details><summary>Kartiq (dark) · careful persona · 4 steps · payable ₹547</summary>
-<table class="trace"><tr><th>#</th><th>Screen</th><th>What the persona did</th></tr>
+<div class="scroll"><table class="trace"><tr><th>#</th><th>Screen</th><th>What the persona did</th></tr>
 <tr><td>1</td><td>/product/tee</td><td>untick 'Add Kartiq Protect accidental-damage cover for ₹49' (optional paid extra not in intent); click 'Add to cart' — best match for goal ('Add to cart')</td></tr><tr><td>2</td><td>/cart</td><td>click 'No thanks, I hate saving money' — best match for goal ('No thanks, I hate saving money')</td></tr><tr><td>3</td><td>/checkout</td><td>untick 'Do not tick this box if you do not want to receive offers from our partners' (consent set per intent); click 'Continue to review' — best match for goal ('Continue to review')</td></tr><tr><td>4</td><td>/checkout/review</td><td>STOP at payment gate — 'Pay ₹547' not pressed (no real transactions)</td></tr>
-</table></details>
+</table></div></details>
 <details><summary>Kartiq (dark) · hurried persona · 4 steps · payable ₹596</summary>
-<table class="trace"><tr><th>#</th><th>Screen</th><th>What the persona did</th></tr>
+<div class="scroll"><table class="trace"><tr><th>#</th><th>Screen</th><th>What the persona did</th></tr>
 <tr><td>1</td><td>/product/tee</td><td>click 'Add to cart' — most visually dominant control ('Add to cart', salience 43531)</td></tr><tr><td>2</td><td>/cart</td><td>click 'Checkout with Kartiq Plus — FREE 30-day trial' — most visually dominant control ('Checkout with Kartiq Plus — FREE 30-day trial', salience 251366)</td></tr><tr><td>3</td><td>/checkout</td><td>click 'Continue to review' — most visually dominant control ('Continue to review', salience 61974)</td></tr><tr><td>4</td><td>/checkout/review</td><td>STOP at payment gate — 'Pay ₹596' not pressed (no real transactions)</td></tr>
-</table></details>
+</table></div></details>
 <details><summary>Kartiq (dark) · agent persona · 4 steps · payable ₹547</summary>
-<table class="trace"><tr><th>#</th><th>Screen</th><th>What the persona did</th></tr>
+<div class="scroll"><table class="trace"><tr><th>#</th><th>Screen</th><th>What the persona did</th></tr>
 <tr><td>1</td><td>/product/tee</td><td>untick 'Add Kartiq Protect accidental-damage cover for ₹49' (Decline accidental-damage cover to avoid extra cost and add-ons.); click 'Add to cart' — LLM: Unchecked optional protection fee; clicking Add to cart proceeds with only the tee.</td></tr><tr><td>2</td><td>/cart</td><td>click 'No thanks, I hate saving money' — LLM: Decline the trial to avoid unwanted subscription and stay focused on buying just the tee.</td></tr><tr><td>3</td><td>/checkout</td><td>untick 'Do not tick this box if you do not want to receive offers from our partners' (Untick to stop receiving partner offers as requested.); click 'Continue to review' — LLM: Unchecked box to decline partner offers and proceed to review.</td></tr><tr><td>4</td><td>/checkout/review</td><td>STOP at payment gate — 'Pay ₹547' not pressed (no real transactions)</td></tr>
-</table></details>
+</table></div></details>
 <details><summary>Kartiq (honest) · careful persona · 4 steps · payable ₹539</summary>
-<table class="trace"><tr><th>#</th><th>Screen</th><th>What the persona did</th></tr>
+<div class="scroll"><table class="trace"><tr><th>#</th><th>Screen</th><th>What the persona did</th></tr>
 <tr><td>1</td><td>/product/tee</td><td>click 'Add to cart' — best match for goal ('Add to cart')</td></tr><tr><td>2</td><td>/cart</td><td>click 'Proceed to checkout' — best match for goal ('Proceed to checkout')</td></tr><tr><td>3</td><td>/checkout</td><td>click 'Continue to review' — best match for goal ('Continue to review')</td></tr><tr><td>4</td><td>/checkout/review</td><td>STOP at payment gate — 'Pay ₹539' not pressed (no real transactions)</td></tr>
-</table></details>
+</table></div></details>
 <details><summary>Kartiq (honest) · hurried persona · 4 steps · payable ₹539</summary>
-<table class="trace"><tr><th>#</th><th>Screen</th><th>What the persona did</th></tr>
+<div class="scroll"><table class="trace"><tr><th>#</th><th>Screen</th><th>What the persona did</th></tr>
 <tr><td>1</td><td>/product/tee</td><td>click 'Add to cart' — most visually dominant control ('Add to cart', salience 43531)</td></tr><tr><td>2</td><td>/cart</td><td>click 'Proceed to checkout' — most visually dominant control ('Proceed to checkout', salience 51474)</td></tr><tr><td>3</td><td>/checkout</td><td>click 'Continue to review' — most visually dominant control ('Continue to review', salience 61974)</td></tr><tr><td>4</td><td>/checkout/review</td><td>STOP at payment gate — 'Pay ₹539' not pressed (no real transactions)</td></tr>
-</table></details>
+</table></div></details>
 <details><summary>Kartiq (honest) · agent persona · 4 steps · payable ₹539</summary>
-<table class="trace"><tr><th>#</th><th>Screen</th><th>What the persona did</th></tr>
+<div class="scroll"><table class="trace"><tr><th>#</th><th>Screen</th><th>What the persona did</th></tr>
 <tr><td>1</td><td>/product/tee</td><td>click 'Add to cart' — LLM: Add only the Classic Black Tee without optional protection or subscriptions.</td></tr><tr><td>2</td><td>/cart</td><td>click 'Proceed to checkout' — LLM: No add-ons or consents to decline; proceed directly with the single item.</td></tr><tr><td>3</td><td>/checkout</td><td>click 'Continue to review' — LLM: Unchecked offer consent and clicking Continue to review order details.</td></tr><tr><td>4</td><td>/checkout/review</td><td>STOP at payment gate — 'Pay ₹539' not pressed (no real transactions)</td></tr>
-</table></details>
+</table></div></details>
 
 <h2>Method and limits</h2>
 <ul>
