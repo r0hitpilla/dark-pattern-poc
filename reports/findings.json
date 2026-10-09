@@ -1,0 +1,1163 @@
+{
+  "llm_backend": "Ollama \u00b7 qwen3.5:35b-a3b (local)",
+  "llm_stats": {
+    "calls": 36,
+    "cached": 31,
+    "seconds": 18.9,
+    "failures": 0,
+    "by_task": {
+      "consent wording": {
+        "calls": 2,
+        "cached": 2,
+        "seconds": 0.0
+      },
+      "navigation": {
+        "calls": 18,
+        "cached": 17,
+        "seconds": 1.8
+      },
+      "claim extraction": {
+        "calls": 6,
+        "cached": 3,
+        "seconds": 5.9
+      },
+      "confirm-shaming wording": {
+        "calls": 2,
+        "cached": 2,
+        "seconds": 0.0
+      },
+      "VLM screenshot baseline": {
+        "calls": 8,
+        "cached": 7,
+        "seconds": 11.3
+      }
+    },
+    "text_model": "qwen3.5:35b-a3b",
+    "vision_model": "qwen3.5:35b-a3b"
+  },
+  "intent": "buy one Classic Black Tee \u2014 no add-ons, no subscription, decline optional consents",
+  "score": [
+    {
+      "key": "false_urgency",
+      "desc": "Product-page countdown restarts at 15:00 for every visitor/page load",
+      "ccpa": "False Urgency",
+      "h_dark": true,
+      "h_clean": false,
+      "b_dark": true,
+      "b_clean": true,
+      "v_dark": true,
+      "v_clean": true
+    },
+    {
+      "key": "false_scarcity",
+      "desc": "'Only 2 left' shown while inventory holds 140 units",
+      "ccpa": "False Urgency (false scarcity claim)",
+      "h_dark": true,
+      "h_clean": false,
+      "b_dark": true,
+      "b_clean": true,
+      "v_dark": true,
+      "v_clean": true
+    },
+    {
+      "key": "basket_sneaking",
+      "desc": "Paid 'Kartiq Protect' add-on is pre-ticked on the product page",
+      "ccpa": "Basket Sneaking",
+      "h_dark": true,
+      "h_clean": false,
+      "b_dark": true,
+      "b_clean": false,
+      "v_dark": false,
+      "v_clean": true
+    },
+    {
+      "key": "drip_pricing",
+      "desc": "Convenience and handling fees appear only on the final review step",
+      "ccpa": "Drip Pricing",
+      "h_dark": true,
+      "h_clean": false,
+      "b_dark": false,
+      "b_clean": false,
+      "v_dark": true,
+      "v_clean": true
+    },
+    {
+      "key": "interface_interference",
+      "desc": "Plus trial is the dominant checkout button; plain checkout is a small grey link",
+      "ccpa": "Interface Interference",
+      "h_dark": true,
+      "h_clean": false,
+      "b_dark": true,
+      "b_clean": false,
+      "v_dark": true,
+      "v_clean": false
+    },
+    {
+      "key": "confirm_shaming",
+      "desc": "Decline link reads 'No thanks, I hate saving money'",
+      "ccpa": "Confirm Shaming",
+      "h_dark": true,
+      "h_clean": false,
+      "b_dark": true,
+      "b_clean": false,
+      "v_dark": true,
+      "v_clean": false
+    },
+    {
+      "key": "trick_question",
+      "desc": "Pre-ticked partner-offers consent worded with a double negative",
+      "ccpa": "Trick Question",
+      "h_dark": true,
+      "h_clean": false,
+      "b_dark": true,
+      "b_clean": false,
+      "v_dark": true,
+      "v_clean": false
+    },
+    {
+      "key": "subscription_trap",
+      "desc": "Joining Plus takes 2 clicks; cancelling takes 6 with a survey and retention offer",
+      "ccpa": "Subscription Trap",
+      "h_dark": true,
+      "h_clean": false,
+      "b_dark": false,
+      "b_clean": false,
+      "v_dark": false,
+      "v_clean": false
+    },
+    {
+      "key": "nagging",
+      "desc": "'Get the app' dialog reappears on every page even after it is dismissed",
+      "ccpa": "Nagging",
+      "h_dark": true,
+      "h_clean": false,
+      "b_dark": false,
+      "b_clean": false,
+      "v_dark": false,
+      "v_clean": false
+    }
+  ],
+  "dark": {
+    "name": "Kartiq (dark)",
+    "journeys": [
+      {
+        "persona": "careful",
+        "trace": [
+          {
+            "step": 0,
+            "url": "/product/tee",
+            "action": "untick 'Add Kartiq Protect accidental-damage cover for \u20b949' (optional paid extra not in intent); click 'Add to cart' \u2014 best match for goal ('Add to cart')",
+            "clicked": {
+              "idx": 0,
+              "tag": "button",
+              "area": 8624,
+              "font": 20,
+              "colour": 1.27,
+              "salience": 43531
+            }
+          },
+          {
+            "step": 1,
+            "url": "/cart",
+            "action": "click 'No thanks, I hate saving money' \u2014 best match for goal ('No thanks, I hate saving money')",
+            "clicked": {
+              "idx": 1,
+              "tag": "a",
+              "area": 2272,
+              "font": 11,
+              "colour": 0,
+              "salience": 1785
+            }
+          },
+          {
+            "step": 2,
+            "url": "/checkout",
+            "action": "untick 'Do not tick this box if you do not want to receive offers from our partners' (consent set per intent); click 'Continue to review' \u2014 best match for goal ('Continue to review')",
+            "clicked": {
+              "idx": 0,
+              "tag": "button",
+              "area": 12278,
+              "font": 20,
+              "colour": 1.27,
+              "salience": 61974
+            }
+          },
+          {
+            "step": 3,
+            "url": "/checkout/review",
+            "action": "STOP at payment gate",
+            "detail": "'Pay \u20b9547' not pressed (no real transactions)"
+          }
+        ],
+        "first_seen": {
+          "price": 499,
+          "disclosed_fees": []
+        },
+        "gate_rows": [
+          [
+            "Classic Black Tee \u00d7 1",
+            "\u20b9499"
+          ],
+          [
+            "Convenience fee",
+            "\u20b929"
+          ],
+          [
+            "Handling charges",
+            "\u20b919"
+          ],
+          [
+            "Total payable",
+            "\u20b9547"
+          ]
+        ],
+        "gate_text": "Review your order\nClassic Black Tee \u00d7 1\t\u20b9499\nConvenience fee\t\u20b929\nHandling charges\t\u20b919\nTotal payable\t\u20b9547\n\nPay \u20b9547",
+        "payable": 547,
+        "account": {
+          "Membership": "Not a member",
+          "Partner offers & data sharing": "Off"
+        },
+        "notes": [
+          {
+            "type": "pre_ticked_paid_option",
+            "label": "Add Kartiq Protect accidental-damage cover for \u20b949",
+            "url": "/product/tee"
+          },
+          {
+            "type": "consent_box",
+            "label": "Do not tick this box if you do not want to receive offers from our partners",
+            "pre_ticked": true,
+            "negations": 2,
+            "double_negative": true,
+            "by": "Ollama \u00b7 qwen3.5:35b-a3b (local)",
+            "tick_means_yes": true,
+            "readers_disagree": false,
+            "reason": "The label uses a double-negative structure ('Do not tick' conditioned on 'do not want'). Step-by-step logic: 1) Condition stated is negative (user does NOT want offers). Action required for this condition is negative (DO NOT tick box). 2) Contrapositive analysis: If the user DOES tick the box, it implies they DO want offers. Therefore, ticking indicates consent to receive partner offers. However, this phrasing is confusing because users must process two negatives ('Do not' and 'do not') to understand that checking the box grants permission.",
+            "set_to": false,
+            "url": "/checkout"
+          }
+        ],
+        "nag_dismissals": 4,
+        "reached_gate": true
+      },
+      {
+        "persona": "hurried",
+        "trace": [
+          {
+            "step": 0,
+            "url": "/product/tee",
+            "action": "click 'Add to cart' \u2014 most visually dominant control ('Add to cart', salience 43531)",
+            "clicked": {
+              "idx": 0,
+              "tag": "button",
+              "area": 8624,
+              "font": 20,
+              "colour": 1.27,
+              "salience": 43531
+            }
+          },
+          {
+            "step": 1,
+            "url": "/cart",
+            "action": "click 'Checkout with Kartiq Plus \u2014 FREE 30-day trial' \u2014 most visually dominant control ('Checkout with Kartiq Plus \u2014 FREE 30-day trial', salience 251366)",
+            "clicked": {
+              "idx": 0,
+              "tag": "button",
+              "area": 53320,
+              "font": 22,
+              "colour": 1,
+              "salience": 251366
+            }
+          },
+          {
+            "step": 2,
+            "url": "/checkout",
+            "action": "click 'Continue to review' \u2014 most visually dominant control ('Continue to review', salience 61974)",
+            "clicked": {
+              "idx": 0,
+              "tag": "button",
+              "area": 12278,
+              "font": 20,
+              "colour": 1.27,
+              "salience": 61974
+            }
+          },
+          {
+            "step": 3,
+            "url": "/checkout/review",
+            "action": "STOP at payment gate",
+            "detail": "'Pay \u20b9596' not pressed (no real transactions)"
+          }
+        ],
+        "first_seen": {
+          "price": 499,
+          "disclosed_fees": []
+        },
+        "gate_rows": [
+          [
+            "Classic Black Tee \u00d7 1",
+            "\u20b9499"
+          ],
+          [
+            "Kartiq Protect",
+            "\u20b949"
+          ],
+          [
+            "Convenience fee",
+            "\u20b929"
+          ],
+          [
+            "Handling charges",
+            "\u20b919"
+          ],
+          [
+            "Total payable",
+            "\u20b9596"
+          ]
+        ],
+        "gate_text": "Review your order\nClassic Black Tee \u00d7 1\t\u20b9499\nKartiq Protect\t\u20b949\nConvenience fee\t\u20b929\nHandling charges\t\u20b919\nTotal payable\t\u20b9596\n\nKartiq Plus trial active. \u20b9199/month after 30 days.\n\nPay \u20b9596",
+        "payable": 596,
+        "account": {
+          "Membership": "Kartiq Plus (trial)",
+          "Partner offers & data sharing": "On"
+        },
+        "notes": [],
+        "nag_dismissals": 4,
+        "reached_gate": true
+      },
+      {
+        "persona": "agent",
+        "trace": [
+          {
+            "step": 0,
+            "url": "/product/tee",
+            "action": "untick 'Add Kartiq Protect accidental-damage cover for \u20b949' (Decline accidental-damage cover to avoid extra cost and add-ons.); click 'Add to cart' \u2014 LLM: Unchecked optional protection fee; clicking Add to cart proceeds with only the tee.",
+            "clicked": {
+              "idx": 0,
+              "tag": "button",
+              "area": 8624,
+              "font": 20,
+              "colour": 1.27,
+              "salience": 43531
+            }
+          },
+          {
+            "step": 1,
+            "url": "/cart",
+            "action": "click 'No thanks, I hate saving money' \u2014 LLM: Decline the trial to avoid unwanted subscription and stay focused on buying just the tee.",
+            "clicked": {
+              "idx": 1,
+              "tag": "a",
+              "area": 2272,
+              "font": 11,
+              "colour": 0,
+              "salience": 1785
+            }
+          },
+          {
+            "step": 2,
+            "url": "/checkout",
+            "action": "untick 'Do not tick this box if you do not want to receive offers from our partners' (Untick to stop receiving partner offers as requested.); click 'Continue to review' \u2014 LLM: Unchecked box to decline partner offers and proceed to review.",
+            "clicked": {
+              "idx": 0,
+              "tag": "button",
+              "area": 12278,
+              "font": 20,
+              "colour": 1.27,
+              "salience": 61974
+            }
+          },
+          {
+            "step": 3,
+            "url": "/checkout/review",
+            "action": "STOP at payment gate",
+            "detail": "'Pay \u20b9547' not pressed (no real transactions)"
+          }
+        ],
+        "first_seen": {
+          "price": 499,
+          "disclosed_fees": []
+        },
+        "gate_rows": [
+          [
+            "Classic Black Tee \u00d7 1",
+            "\u20b9499"
+          ],
+          [
+            "Convenience fee",
+            "\u20b929"
+          ],
+          [
+            "Handling charges",
+            "\u20b919"
+          ],
+          [
+            "Total payable",
+            "\u20b9547"
+          ]
+        ],
+        "gate_text": "Review your order\nClassic Black Tee \u00d7 1\t\u20b9499\nConvenience fee\t\u20b929\nHandling charges\t\u20b919\nTotal payable\t\u20b9547\n\nPay \u20b9547",
+        "payable": 547,
+        "account": {
+          "Membership": "Not a member",
+          "Partner offers & data sharing": "Off"
+        },
+        "notes": [],
+        "nag_dismissals": 4,
+        "reached_gate": true
+      }
+    ],
+    "fals": {
+      "observations": [
+        {
+          "session": 1,
+          "observed_at": 1791553878.5212507,
+          "timer": "14:58",
+          "stock_claim": 2,
+          "extracted_by": "Ollama \u00b7 qwen3.5:35b-a3b (local)",
+          "quotes": [
+            "Deal ends in 14:58",
+            "Hurry! Only 2 left in stock"
+          ],
+          "implied_deadline": 1791554776.5212507
+        },
+        {
+          "session": 2,
+          "observed_at": 1791553882.885254,
+          "timer": "14:58",
+          "stock_claim": 2,
+          "extracted_by": "Ollama \u00b7 qwen3.5:35b-a3b (local)",
+          "quotes": [
+            "Deal ends in 14:58",
+            "Hurry! Only 2 left in stock"
+          ],
+          "implied_deadline": 1791554780.885254
+        },
+        {
+          "session": 3,
+          "observed_at": 1791553887.2027814,
+          "timer": "14:58",
+          "stock_claim": 2,
+          "extracted_by": "Ollama \u00b7 qwen3.5:35b-a3b (local)",
+          "quotes": [
+            "Deal ends in 14:58",
+            "Hurry! Only 2 left in stock"
+          ],
+          "implied_deadline": 1791554785.2027814
+        }
+      ],
+      "timer": {
+        "deadline_spread_s": 8.7,
+        "elapsed_s": 8.7,
+        "verdict": "false",
+        "explanation": "Implied deadline moved 9s across 3 sessions 9s apart: the countdown restarts per visit, so the deadline is not real."
+      },
+      "stock": {
+        "claim": 2,
+        "inventory": 140,
+        "verdict": "false",
+        "explanation": "Page claims 'only 2 left'; inventory system of record holds 140."
+      }
+    },
+    "fric": {
+      "join": {
+        "actions": 2,
+        "screens": 2,
+        "nag_dismissals": 3,
+        "path": [
+          "/account: 'Join Kartiq Plus'",
+          "/plus: 'Start membership'"
+        ],
+        "completed": true
+      },
+      "cancel": {
+        "actions": 6,
+        "screens": 5,
+        "nag_dismissals": 6,
+        "path": [
+          "/account: 'Manage membership'",
+          "/plus/manage: 'Cancel membership'",
+          "/plus/cancel/reason: answer 'reason'",
+          "/plus/cancel/reason: 'Next'",
+          "/plus/cancel/offer: 'Continue cancelling'",
+          "/plus/cancel/confirm: 'Confirm cancellation'"
+        ],
+        "completed": true
+      },
+      "ratio": 3.0,
+      "verdict": "asymmetric",
+      "agent": {
+        "join": {
+          "actions": 2,
+          "screens": 2,
+          "nag_dismissals": 3,
+          "path": [
+            "/account: 'Join Kartiq Plus'",
+            "/plus: 'Start membership'"
+          ],
+          "completed": true
+        },
+        "cancel": {
+          "actions": 6,
+          "screens": 5,
+          "nag_dismissals": 6,
+          "path": [
+            "/account: 'Manage membership'",
+            "/plus/manage: 'Cancel membership'",
+            "/plus/cancel/reason: answer 'reason'",
+            "/plus/cancel/reason: 'Next'",
+            "/plus/cancel/offer: 'Continue cancelling'",
+            "/plus/cancel/confirm: 'Confirm cancellation'"
+          ],
+          "completed": true
+        },
+        "ratio": 3.0,
+        "verdict": "asymmetric"
+      }
+    },
+    "nag": {
+      "shown_first_visit": true,
+      "pages_after_dismissal": 5,
+      "reappeared_on": [
+        "/product/tee",
+        "/product/cap",
+        "/plus",
+        "/account",
+        "/"
+      ],
+      "verdict": "nagging"
+    },
+    "findings": [
+      {
+        "key": "basket_sneaking",
+        "ccpa": "Basket Sneaking",
+        "strength": "Proven",
+        "title": "Paid add-on lands in the basket unless the user notices and unticks it",
+        "expected": "Intent: buy one Classic Black Tee \u2014 no add-ons, no subscription, decline optional consents \u2014 only the product in the order",
+        "observed": "hurried: Kartiq Protect",
+        "evidence": [
+          "Paid option pre-ticked on /product/tee: \"Add Kartiq Protect accidental-damage cover for \u20b949\"",
+          "hurried user's order at the payment gate contains unrequested Kartiq Protect (\u20b949)"
+        ],
+        "method": "Intent oracle: order contents at payment gate vs stated intent"
+      },
+      {
+        "key": "drip_pricing",
+        "ccpa": "Drip Pricing",
+        "strength": "Proven",
+        "title": "\u20b948 in fees appear only at the final step",
+        "expected": "First price shown: \u20b9499 \u2192 expected payable \u20b9499",
+        "observed": "Careful user's payable at gate: \u20b9547 (+\u20b948)",
+        "evidence": [
+          "Undisclosed on product page: Convenience fee \u20b929",
+          "Undisclosed on product page: Handling charges \u20b919"
+        ],
+        "method": "Price-consistency oracle: first displayed price vs final payable, after removing intended items"
+      },
+      {
+        "key": "interface_interference",
+        "ccpa": "Interface Interference",
+        "strength": "Proven",
+        "title": "Inattentive user is steered into a paid subscription",
+        "expected": "Intent: buy one Classic Black Tee \u2014 no add-ons, no subscription, decline optional consents \u2014 no subscription",
+        "observed": "Hurried user ends with Kartiq Plus (trial) (\u20b9199/month after trial)",
+        "evidence": [
+          "On /cart the offer button \"Checkout with Kartiq Plus \u2014 FREE 30-day trial\" is 141\u00d7 more visually dominant than the plain option \"No thanks, I hate saving money\" (area \u00d7 colour \u00d7 font).",
+          "Careful user: Not a member; hurried user: Kartiq Plus (trial)"
+        ],
+        "method": "Persona differential: same goal, careful vs hurried; end state read from account system of record"
+      },
+      {
+        "key": "trick_question",
+        "ccpa": "Trick Question",
+        "strength": "Proven",
+        "title": "Confusingly worded, pre-ticked consent leaves data sharing on",
+        "expected": "Intent: decline optional consents \u2192 Partner offers & data sharing: Off",
+        "observed": "careful: Partner offers & data sharing Off, hurried: Partner offers & data sharing On, agent: Partner offers & data sharing Off",
+        "evidence": [
+          "Label on /checkout: \"Do not tick this box if you do not want to receive offers from our partners\"",
+          "2 negations; pre-ticked: True",
+          "Wording assessed by: Ollama \u00b7 qwen3.5:35b-a3b (local) \u2014 The label uses a double-negative structure ('Do not tick' conditioned on 'do not want'). Step-by-step logic: 1) Condition stated is negative (user does NOT want offers). Action required for this condition is negative (DO NOT tick box). 2) Contrapositive analysis: If the user DOES tick the box, it implies they DO want offers. Therefore, ticking indicates consent to receive partner offers. However, this phrasing is confusing because users must process two negatives ('Do not' and 'do not') to understand that checking the box grants permission."
+        ],
+        "method": "Consent oracle (account state vs intent) + wording analysis"
+      },
+      {
+        "key": "confirm_shaming",
+        "ccpa": "Confirm Shaming",
+        "strength": "Judged",
+        "title": "Declining the offer is worded to shame the user",
+        "expected": "Neutral decline wording (e.g. 'No thanks')",
+        "observed": "\"No thanks, I hate saving money\"",
+        "evidence": [
+          "On /cart: The phrase 'I hate saving money' attributes a negative and irrational sentiment to the shopper who declines the offer, making them feel foolish or guilty for not accepting savings. (assessed by: Ollama \u00b7 qwen3.5:35b-a3b (local))"
+        ],
+        "method": "Wording judgement on decline options shown next to an offer \u2014 confirm with human review"
+      },
+      {
+        "key": "false_urgency",
+        "ccpa": "False Urgency",
+        "strength": "Proven",
+        "title": "Countdown restarts for every visitor",
+        "expected": "A sale deadline is the same moment for every shopper",
+        "observed": "Implied deadline moved 9s across 3 sessions 9s apart: the countdown restarts per visit, so the deadline is not real.",
+        "evidence": [
+          "Session 1: showed 14:58",
+          "Session 2: showed 14:58",
+          "Session 3: showed 14:58"
+        ],
+        "method": "Cross-session temporal consistency check"
+      },
+      {
+        "key": "false_scarcity",
+        "ccpa": "False Urgency (false scarcity claim)",
+        "strength": "Proven",
+        "title": "Low-stock claim contradicts inventory",
+        "expected": "Stock claim equals units available",
+        "observed": "Page claims 'only 2 left'; inventory system of record holds 140.",
+        "evidence": [
+          "Claim was identical in all 3 sessions"
+        ],
+        "method": "Claim vs client inventory system of record (UAT API)"
+      },
+      {
+        "key": "subscription_trap",
+        "ccpa": "Subscription Trap",
+        "strength": "Measured",
+        "title": "Cancelling takes 3\u00d7 the effort of joining",
+        "expected": "Leaving is about as easy as joining (ratio \u2264 1.5)",
+        "observed": "Join: 2 actions \u00b7 Cancel: 6 actions across 5 screens",
+        "evidence": [
+          "Cancel path: /account: 'Manage membership' \u2192 /plus/manage: 'Cancel membership' \u2192 /plus/cancel/reason: answer 'reason' \u2192 /plus/cancel/reason: 'Next' \u2192 /plus/cancel/offer: 'Continue cancelling' \u2192 /plus/cancel/confirm: 'Confirm cancellation'",
+          "Includes mandatory exit survey, retention-offer interstitial with a dominant 'keep' button"
+        ],
+        "method": "Friction asymmetry: goal-directed agent counts actions for join vs cancel"
+      },
+      {
+        "key": "nagging",
+        "ccpa": "Nagging",
+        "strength": "Measured",
+        "title": "Dismissed prompt keeps coming back",
+        "expected": "Once dismissed, the prompt stays dismissed for the session",
+        "observed": "Reappeared on 5 of 5 pages after 'Not now'",
+        "evidence": [
+          "Reappeared on: /product/tee, /product/cap, /plus, /account, /"
+        ],
+        "method": "Repetition count across page loads after dismissal"
+      }
+    ],
+    "passes": [],
+    "delta": {
+      "payable": {
+        "careful": 547,
+        "hurried": 596,
+        "agent": 547
+      },
+      "addons": {
+        "careful": "none",
+        "hurried": "Kartiq Protect",
+        "agent": "none"
+      },
+      "membership": {
+        "careful": "Not a member",
+        "hurried": "Kartiq Plus (trial)",
+        "agent": "Not a member"
+      },
+      "consent": {
+        "careful": "Off",
+        "hurried": "On",
+        "agent": "Off"
+      },
+      "recurring": {
+        "careful": "none",
+        "hurried": "\u20b9199/month",
+        "agent": "none"
+      }
+    },
+    "base": {
+      "false_urgency": [
+        "/product/tee: urgency language 'Deal ends'"
+      ],
+      "false_scarcity": [
+        "/product/tee: scarcity language 'Only 2 left'"
+      ],
+      "basket_sneaking": [
+        "/product/tee: pre-ticked paid option 'Add Kartiq Protect accidental-damage cover for \u20b949'"
+      ],
+      "interface_interference": [
+        "/cart: offer button 'Checkout with Kartiq Plus \u2014 FREE 30-day trial' dominates the screen"
+      ],
+      "confirm_shaming": [
+        "/cart: guilt wording 'No thanks, I hate saving money'"
+      ],
+      "trick_question": [
+        "/checkout: double negative in 'Do not tick this box if you do not want to receive offers from our partners'"
+      ]
+    },
+    "vlm": {
+      "false_urgency": [
+        "/product/tee: 'Deal ends in 14:59' countdown timer creates artificial time pressure."
+      ],
+      "false_scarcity": [
+        "/product/tee: 'Hurry! Only 2 left in stock' message pressures the user by implying limited availability."
+      ],
+      "interface_interference": [
+        "/cart: The checkout button is a large, bright orange block that dominates the visual hierarchy of the page. In contrast, the alternative option to proceed without joining Plus ('No thanks...') is styled as small, grey text with low visibility."
+      ],
+      "confirm_shaming": [
+        "/cart: The link for declining the subscription offer reads 'No thanks, I hate saving money', which uses guilt and ridicule to shame the user into accepting the paid service."
+      ],
+      "trick_question": [
+        "/checkout: "
+      ],
+      "drip_pricing": [
+        "/checkout/review: The checkout screen reveals additional fees (Convenience fee \u20b929, Handling charges \u20b919) that were not included in the initial product price of \u20b9499 shown for the 'Classic Black Tee', resulting in a higher total payable amount."
+      ]
+    },
+    "agent": {
+      "agrees": true,
+      "diff": [],
+      "reached_gate": true,
+      "steps": 4
+    }
+  },
+  "clean": {
+    "name": "Kartiq (honest)",
+    "journeys": [
+      {
+        "persona": "careful",
+        "trace": [
+          {
+            "step": 0,
+            "url": "/product/tee",
+            "action": "click 'Add to cart' \u2014 best match for goal ('Add to cart')",
+            "clicked": {
+              "idx": 0,
+              "tag": "button",
+              "area": 8624,
+              "font": 20,
+              "colour": 1.27,
+              "salience": 43531
+            }
+          },
+          {
+            "step": 1,
+            "url": "/cart",
+            "action": "click 'Proceed to checkout' \u2014 best match for goal ('Proceed to checkout')",
+            "clicked": {
+              "idx": 0,
+              "tag": "a",
+              "area": 11331,
+              "font": 18,
+              "colour": 1.27,
+              "salience": 51474
+            }
+          },
+          {
+            "step": 2,
+            "url": "/checkout",
+            "action": "click 'Continue to review' \u2014 best match for goal ('Continue to review')",
+            "clicked": {
+              "idx": 0,
+              "tag": "button",
+              "area": 12278,
+              "font": 20,
+              "colour": 1.27,
+              "salience": 61974
+            }
+          },
+          {
+            "step": 3,
+            "url": "/checkout/review",
+            "action": "STOP at payment gate",
+            "detail": "'Pay \u20b9539' not pressed (no real transactions)"
+          }
+        ],
+        "first_seen": {
+          "price": 499,
+          "disclosed_fees": [
+            {
+              "label": "delivery",
+              "amount": 40
+            }
+          ]
+        },
+        "gate_rows": [
+          [
+            "Classic Black Tee \u00d7 1",
+            "\u20b9499"
+          ],
+          [
+            "Delivery",
+            "\u20b940"
+          ],
+          [
+            "Total payable",
+            "\u20b9539"
+          ]
+        ],
+        "gate_text": "Review your order\nClassic Black Tee \u00d7 1\t\u20b9499\nDelivery\t\u20b940\nTotal payable\t\u20b9539\n\nPay \u20b9539",
+        "payable": 539,
+        "account": {
+          "Membership": "Not a member",
+          "Partner offers & data sharing": "Off"
+        },
+        "notes": [
+          {
+            "type": "consent_box",
+            "label": "Send me offers from Kartiq partners",
+            "pre_ticked": false,
+            "negations": 0,
+            "double_negative": false,
+            "by": "Ollama \u00b7 qwen3.5:35b-a3b (local)",
+            "tick_means_yes": true,
+            "readers_disagree": false,
+            "reason": "Step 1: Scan for negative terms (not, no, never). Result: None found in the label text. Step 2: Analyze phrasing structure. Result: Direct affirmative imperative ('Send me offers'). Step 3: Determine if ticking implies consent. Result: Yes, checking the box agrees to receive offers from partners. Conclusion: No negations or misleading language detected.",
+            "set_to": false,
+            "url": "/checkout"
+          }
+        ],
+        "nag_dismissals": 1,
+        "reached_gate": true
+      },
+      {
+        "persona": "hurried",
+        "trace": [
+          {
+            "step": 0,
+            "url": "/product/tee",
+            "action": "click 'Add to cart' \u2014 most visually dominant control ('Add to cart', salience 43531)",
+            "clicked": {
+              "idx": 0,
+              "tag": "button",
+              "area": 8624,
+              "font": 20,
+              "colour": 1.27,
+              "salience": 43531
+            }
+          },
+          {
+            "step": 1,
+            "url": "/cart",
+            "action": "click 'Proceed to checkout' \u2014 most visually dominant control ('Proceed to checkout', salience 51474)",
+            "clicked": {
+              "idx": 0,
+              "tag": "a",
+              "area": 11331,
+              "font": 18,
+              "colour": 1.27,
+              "salience": 51474
+            }
+          },
+          {
+            "step": 2,
+            "url": "/checkout",
+            "action": "click 'Continue to review' \u2014 most visually dominant control ('Continue to review', salience 61974)",
+            "clicked": {
+              "idx": 0,
+              "tag": "button",
+              "area": 12278,
+              "font": 20,
+              "colour": 1.27,
+              "salience": 61974
+            }
+          },
+          {
+            "step": 3,
+            "url": "/checkout/review",
+            "action": "STOP at payment gate",
+            "detail": "'Pay \u20b9539' not pressed (no real transactions)"
+          }
+        ],
+        "first_seen": {
+          "price": 499,
+          "disclosed_fees": [
+            {
+              "label": "delivery",
+              "amount": 40
+            }
+          ]
+        },
+        "gate_rows": [
+          [
+            "Classic Black Tee \u00d7 1",
+            "\u20b9499"
+          ],
+          [
+            "Delivery",
+            "\u20b940"
+          ],
+          [
+            "Total payable",
+            "\u20b9539"
+          ]
+        ],
+        "gate_text": "Review your order\nClassic Black Tee \u00d7 1\t\u20b9499\nDelivery\t\u20b940\nTotal payable\t\u20b9539\n\nPay \u20b9539",
+        "payable": 539,
+        "account": {
+          "Membership": "Not a member",
+          "Partner offers & data sharing": "Off"
+        },
+        "notes": [],
+        "nag_dismissals": 1,
+        "reached_gate": true
+      },
+      {
+        "persona": "agent",
+        "trace": [
+          {
+            "step": 0,
+            "url": "/product/tee",
+            "action": "click 'Add to cart' \u2014 LLM: Add only the Classic Black Tee without optional protection or subscriptions.",
+            "clicked": {
+              "idx": 0,
+              "tag": "button",
+              "area": 8624,
+              "font": 20,
+              "colour": 1.27,
+              "salience": 43531
+            }
+          },
+          {
+            "step": 1,
+            "url": "/cart",
+            "action": "click 'Proceed to checkout' \u2014 LLM: No add-ons or consents to decline; proceed directly with the single item.",
+            "clicked": {
+              "idx": 0,
+              "tag": "a",
+              "area": 11331,
+              "font": 18,
+              "colour": 1.27,
+              "salience": 51474
+            }
+          },
+          {
+            "step": 2,
+            "url": "/checkout",
+            "action": "click 'Continue to review' \u2014 LLM: Unchecked offer consent and clicking Continue to review order details.",
+            "clicked": {
+              "idx": 0,
+              "tag": "button",
+              "area": 12278,
+              "font": 20,
+              "colour": 1.27,
+              "salience": 61974
+            }
+          },
+          {
+            "step": 3,
+            "url": "/checkout/review",
+            "action": "STOP at payment gate",
+            "detail": "'Pay \u20b9539' not pressed (no real transactions)"
+          }
+        ],
+        "first_seen": {
+          "price": 499,
+          "disclosed_fees": [
+            {
+              "label": "delivery",
+              "amount": 40
+            }
+          ]
+        },
+        "gate_rows": [
+          [
+            "Classic Black Tee \u00d7 1",
+            "\u20b9499"
+          ],
+          [
+            "Delivery",
+            "\u20b940"
+          ],
+          [
+            "Total payable",
+            "\u20b9539"
+          ]
+        ],
+        "gate_text": "Review your order\nClassic Black Tee \u00d7 1\t\u20b9499\nDelivery\t\u20b940\nTotal payable\t\u20b9539\n\nPay \u20b9539",
+        "payable": 539,
+        "account": {
+          "Membership": "Not a member",
+          "Partner offers & data sharing": "Off"
+        },
+        "notes": [],
+        "nag_dismissals": 1,
+        "reached_gate": true
+      }
+    ],
+    "fals": {
+      "observations": [
+        {
+          "session": 1,
+          "observed_at": 1791553900.5860467,
+          "timer": "1:59:30",
+          "stock_claim": 3,
+          "extracted_by": "Ollama \u00b7 qwen3.5:35b-a3b (local)",
+          "quotes": [
+            "Deal ends in 1:59:30",
+            "Only 3 left in stock"
+          ],
+          "implied_deadline": 1791561070.5860467
+        },
+        {
+          "session": 2,
+          "observed_at": 1791553906.9032128,
+          "timer": "1:59:24",
+          "stock_claim": 3,
+          "extracted_by": "Ollama \u00b7 qwen3.5:35b-a3b (local)",
+          "quotes": [
+            "Deal ends in 1:59:24",
+            "Only 3 left in stock"
+          ],
+          "implied_deadline": 1791561070.9032128
+        },
+        {
+          "session": 3,
+          "observed_at": 1791553913.137265,
+          "timer": "1:59:17",
+          "stock_claim": 3,
+          "extracted_by": "Ollama \u00b7 qwen3.5:35b-a3b (local)",
+          "quotes": [
+            "Deal ends in 1:59:17",
+            "Only 3 left in stock"
+          ],
+          "implied_deadline": 1791561070.137265
+        }
+      ],
+      "timer": {
+        "deadline_spread_s": 0.8,
+        "elapsed_s": 12.6,
+        "verdict": "consistent",
+        "explanation": "Every session pointed to the same deadline (\u00b11s): the countdown is genuine."
+      },
+      "stock": {
+        "claim": 3,
+        "inventory": 3,
+        "verdict": "consistent",
+        "explanation": "Claim of 3 matches inventory (3)."
+      }
+    },
+    "fric": {
+      "join": {
+        "actions": 2,
+        "screens": 2,
+        "nag_dismissals": 1,
+        "path": [
+          "/account: 'Join Kartiq Plus'",
+          "/plus: 'Start membership'"
+        ],
+        "completed": true
+      },
+      "cancel": {
+        "actions": 2,
+        "screens": 2,
+        "nag_dismissals": 0,
+        "path": [
+          "/account: 'Cancel membership'",
+          "/plus/cancel: 'Confirm cancellation'"
+        ],
+        "completed": true
+      },
+      "ratio": 1.0,
+      "verdict": "symmetric",
+      "agent": {
+        "join": {
+          "actions": 2,
+          "screens": 2,
+          "nag_dismissals": 1,
+          "path": [
+            "/account: 'Join Kartiq Plus'",
+            "/plus: 'Start membership'"
+          ],
+          "completed": true
+        },
+        "cancel": {
+          "actions": 2,
+          "screens": 2,
+          "nag_dismissals": 0,
+          "path": [
+            "/account: 'Cancel membership'",
+            "/plus/cancel: 'Confirm cancellation'"
+          ],
+          "completed": true
+        },
+        "ratio": 1.0,
+        "verdict": "symmetric"
+      }
+    },
+    "nag": {
+      "shown_first_visit": true,
+      "pages_after_dismissal": 5,
+      "reappeared_on": [],
+      "verdict": "respects dismissal"
+    },
+    "findings": [],
+    "passes": [
+      "No unrequested items in either persona's order; no paid option pre-ticked.",
+      "Final payable (\u20b9539) matches the price and fees shown on the first screen.",
+      "Neither persona was enrolled in a subscription.",
+      "Optional consent ended Off for both personas; wording is plain.",
+      "Decline options next to offers use neutral wording.",
+      "Urgency claim is genuine: Every session pointed to the same deadline (\u00b11s): the countdown is genuine.",
+      "Scarcity claim is genuine: Claim of 3 matches inventory (3).",
+      "Join and cancel take similar effort (2 vs 2 actions).",
+      "App prompt respects dismissal.",
+      "Careful and hurried personas reached identical outcomes (zero manipulation delta)."
+    ],
+    "delta": {
+      "payable": {
+        "careful": 539,
+        "hurried": 539,
+        "agent": 539
+      },
+      "addons": {
+        "careful": "none",
+        "hurried": "none",
+        "agent": "none"
+      },
+      "membership": {
+        "careful": "Not a member",
+        "hurried": "Not a member",
+        "agent": "Not a member"
+      },
+      "consent": {
+        "careful": "Off",
+        "hurried": "Off",
+        "agent": "Off"
+      },
+      "recurring": {
+        "careful": "none",
+        "hurried": "none",
+        "agent": "none"
+      }
+    },
+    "base": {
+      "false_urgency": [
+        "/product/tee: urgency language 'Deal ends'"
+      ],
+      "false_scarcity": [
+        "/product/tee: scarcity language 'Only 3 left'"
+      ]
+    },
+    "vlm": {
+      "false_urgency": [
+        "/product/tee: The text 'Deal ends in 1:59:38' displays a countdown timer, pressuring the user to act quickly."
+      ],
+      "false_scarcity": [
+        "/product/tee: The text 'Only 3 left in stock' creates an artificial sense of scarcity regarding product availability."
+      ],
+      "drip_pricing": [
+        "/cart: The cart displays a subtotal of \u20b9499, but the link 'Learn about Kartiq Plus (\u20b9199/month)' implies an additional recurring cost that is not included in this total price.",
+        "/checkout/review: The delivery fee of \u20b940 is added at the checkout stage, separate from the product price (\u20b9499), meaning the total cost was not fully disclosed upfront."
+      ],
+      "basket_sneaking": [
+        "/checkout: The checkbox for 'Send me offers from Kartiq partners' is pre-selected (checked) by default, which constitutes a paid item or add-on included without the user explicitly choosing it."
+      ]
+    },
+    "agent": {
+      "agrees": true,
+      "diff": [],
+      "reached_gate": true,
+      "steps": 4
+    }
+  }
+}
