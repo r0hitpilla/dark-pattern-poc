@@ -51,7 +51,8 @@ ul.ev{margin:6px 0 0;padding-left:18px;overflow-wrap:anywhere}.shots{display:fle
 <h1>Dark Pattern Audit</h1>
 {% if scored %}<p class="lead">One engine, no site configuration: it was given only each shop's URL. Across {{ scored|length }} shop variants
 (3 structurally different shops, each dark and honest) it found <b>{{ tp }} of {{ tp + fn }}</b> seeded dark patterns covering all 13 CCPA
-categories, with <b>{{ fp }}</b> false alarm{{ '' if fp == 1 else 's' }}.{% if real %} It also audited {{ real|length }} real public test shops read-only.{% endif %}</p>
+categories, with <b>{{ fp }}</b> false alarm{{ '' if fp == 1 else 's' }}.{% if injected %} On real third-party sites with
+dark patterns injected in the browser it found <b>{{ itp }} of {{ itp + ifn }}</b> with <b>{{ ifp }}</b> false alarm{{ '' if ifp == 1 else 's' }}.{% endif %}{% if real %} It also audited {{ real|length }} real public test shops read-only.{% endif %}</p>
 <div class="kpis"><div class="kpi"><b>{{ tp }}/{{ tp + fn }}</b><span>Seeded patterns found</span></div>
 <div class="kpi"><b>{{ fp }}</b><span>False alarms (incl. honest shops)</span></div>
 <div class="kpi"><b>0</b><span>Lines of site-specific configuration</span></div>
@@ -68,12 +69,15 @@ categories, with <b>{{ fp }}</b> false alarm{{ '' if fp == 1 else 's' }}.{% if r
 appear verbatim on the page, quotes must be found on the page, and control states are read from the page itself.</p>
 
 {% if scored %}<h2>Scorecard</h2>
-<div class="scroll"><table><tr><th>CCPA category</th>{% for r in scored %}<th class="c">{{ r.shop }}<br>{{ 'dark' if r.mode == 'dark' else 'honest' }}</th>{% endfor %}</tr>
-{% for k, lab in ccpa.items() %}<tr><td>{{ lab }}</td>{% for r in scored %}<td class="c">
+<div class="scroll"><table><tr><th>CCPA category</th>{% for r in scored + injected %}<th class="c">{{ r.shop }}<br>{{ modes[r.mode] }}</th>{% endfor %}</tr>
+{% for k, lab in ccpa.items() %}<tr><td>{{ lab }}</td>{% for r in scored + injected %}<td class="c">
 {% if k in r.tp %}<span class="pill hit">found</span>{% elif k in r.fn %}<span class="pill miss">missed</span>
 {% elif k in r.fp %}<span class="pill fp">false alarm</span>{% else %}<span class="quiet">·</span>{% endif %}</td>{% endfor %}</tr>{% endfor %}
 </table></div>
-<p class="method">"·" means the pattern was not seeded in that shop and the engine correctly reported nothing.</p>{% endif %}
+<p class="method">"·" means the pattern was not seeded or injected there and the engine correctly reported nothing.
+{% if injected %}The last {{ injected|length }} columns are real third-party sites with dark patterns injected in our own browser
+({{ itp }} of {{ itp + ifn }} found, {{ ifp }} false alarm{{ '' if ifp == 1 else 's' }}); "honest" adds non-deceptive look-alikes and
+"as is" is the unmodified site.{% endif %}</p>{% endif %}
 
 {% for r in results %}<div class="site"><h2>{{ r.name }}</h2>
 {% if r.error %}<p><span class="pill miss">audit error</span> {{ r.error }}</p>{% endif %}
@@ -112,8 +116,13 @@ feed in UAT makes these checks stronger.</li>
 def write(path, results, stats):
     scored = [r for r in results if r.get("mode") in ("dark", "clean")]
     real = [r for r in results if r.get("mode") == "real"]
+    injected = [r for r in results if str(r.get("mode", "")).startswith("injected")]
     out = TPL.render(when=datetime.now().strftime("%d %b %Y %H:%M"), results=results, scored=scored, real=real, stats=stats,
                      ccpa=CCPA, tp=sum(len(r["tp"]) for r in scored), fn=sum(len(r["fn"]) for r in scored),
-                     fp=sum(len(r["fp"]) for r in scored))
+                     fp=sum(len(r["fp"]) for r in scored), injected=injected,
+                     itp=sum(len(r["tp"]) for r in injected), ifn=sum(len(r["fn"]) for r in injected),
+                     ifp=sum(len(r["fp"]) for r in injected),
+                     modes={"dark": "dark", "clean": "honest", "injected-dark": "injected", "injected-honest": "honest look-alikes",
+                            "injected-clean": "as is"})
     with open(path, "w") as f:
         f.write(out)

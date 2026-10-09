@@ -105,7 +105,15 @@ def create_app(mode="dark"):
         return page(n, f"""<h1>{n}</h1><div class="p" style="font-size:30px">{eur(price)}</div>{note}{left}
             <form method="post" action="/basket/add"><input type="hidden" name="k" value="{k}">
             <label class="blk">Quantity <input type="number" name="qty" value="1" min="1" max="10"></label>
-            <button class="cta" type="submit">Add to basket</button></form>""", extra)
+            <button class="cta" type="submit">Add to basket</button></form>
+            <p class="mini" id="ship"></p><script>fetch('/api/product/{k}').then(r => r.json()).then(d => {{
+              document.getElementById('ship').textContent = 'Ships from ' + d.warehouse + ' within ' + d.ship_days + ' days'; }});</script>""", extra)
+
+    @app.get("/api/product/<k>")
+    def api_product(k):
+        n, price, _ = ITEMS[k]
+        return jsonify({"id": k, "name": n, "price": price, "currency": "EUR", "stock": stock[k],
+                        "warehouse": "Duisburg", "ship_days": 2})
 
     @app.get("/dl/<f>")
     def dl(f):

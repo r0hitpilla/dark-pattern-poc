@@ -29,7 +29,8 @@ SNAPSHOT_JS = r"""
     if (tag === 'header' || tag === 'nav' || role === 'banner' || role === 'navigation') return;
     const r = el.getBoundingClientRect(); const area = (Math.min(r.right, vw) - Math.max(r.left, 0)) * (Math.min(r.bottom, vh) - Math.max(r.top, 0));
     const big = area > 0.12 * vw * vh, edge = r.width > 0.6 * vw && r.height > 40;
-    const t = txt(el.innerText); if (!(big || edge) || t.length < 3) return;
+    const box = area > 0.025 * vw * vh && el.querySelector('button, a[href], input');   // corner popups and slide-ins
+    const t = txt(el.innerText); if (!(big || edge || box) || t.length < 3) return;
     el.setAttribute('data-idt-ov', String(overlays.length));
     overlays.push({idx: overlays.length, text: t.slice(0, 500), cover: +(area / (vw * vh)).toFixed(2)});
   });
@@ -120,6 +121,24 @@ AUTOFILL = {"email": "idt.audit@example.com", "password": "Audit#2026xq", "zip":
             "name": "Test User", "country": "India"}
 
 
+# Callables run on every new browser context the engine opens (e.g. a test fixture that injects scripts).
+# The engine itself registers none.
+CONTEXT_HOOKS = []
+
+MARK_JS = r"""(on) => { document.querySelectorAll('.__idt_mark').forEach(m => m.remove()); if (!on) return [];
+  const vw = innerWidth, vh = innerHeight, shown = [];
+  document.querySelectorAll('[data-idt]').forEach(el => { const r = el.getBoundingClientRect();
+    if (r.width < 2 || r.height < 2 || r.bottom < 0 || r.top > vh || r.right < 0 || r.left > vw) return;
+    const id = el.getAttribute('data-idt'); shown.push(id);
+    const m = document.createElement('div'); m.className = '__idt_mark';
+    m.style.cssText = `position:fixed;left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;` +
+      'outline:2px solid #e00;z-index:2147483647;pointer-events:none;';
+    const t = document.createElement('span'); t.textContent = id;
+    t.style.cssText = 'position:absolute;left:0;top:-14px;background:#e00;color:#fff;font:bold 11px monospace;padding:0 2px';
+    m.appendChild(t); document.documentElement.appendChild(m); });
+  return shown; }"""
+
+
 def origin(url: str) -> str:
     p = urlparse(url)
     return f"{p.scheme}://{p.netloc}"
@@ -132,8 +151,12 @@ class Tab:
         self.ctx = browser.new_context(viewport={"width": 1280, "height": 860}, accept_downloads=True,
                                        user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
                                                   "Chrome/131.0 Safari/537.36 IDT-audit")
+        for hook in CONTEXT_HOOKS:
+            hook(self.ctx)
         self.page = self.ctx.new_page()
         self.origin = origin(start_url)
+        self.json = []            # JSON the page itself downloaded (its own data: stock, prices, deadlines)
+        self.page.on("response", self._response)
         self.readonly = readonly
         self.events = []          # downloads, popups, offsite navigations, JS dialogs
         self.last_action = 0.0
@@ -146,6 +169,25 @@ class Tab:
 
     def _user(self):
         return time.time() - self.last_action < 2.0
+
+    def _response(self, r):
+        try:
+            if len(self.json) < 60 and r.request.resource_type in ("xhr", "fetch") and "json" in (r.headers.get("content-type") or ""):
+                self.json.append({"url": r.url, "body": r.text()[:200000], "page": self.page.url})
+        except Exception:
+            pass
+
+    def marked_shot(self):
+        """Screenshot with every visible control outlined and labelled by its id (set-of-marks), for a vision model."""
+        try:
+            shown = self.page.evaluate(MARK_JS, True)
+            img = self.shot()
+        finally:
+            try:
+                self.page.evaluate(MARK_JS, False)
+            except Exception:
+                pass
+        return img, shown
 
     def _dialog(self, d):
         self.events.append({"type": "js_dialog", "kind": d.type, "message": d.message[:300], "url": self.page.url})
@@ -180,7 +222,14 @@ class Tab:
 
     def goto(self, url):
         self.last_action = time.time()
-        self.page.goto(url, wait_until="domcontentloaded", timeout=30000)
+        for attempt in (0, 1):
+            try:
+                self.page.goto(url, wait_until="domcontentloaded", timeout=30000)
+                break
+            except Exception:
+                if attempt:          # a slow page is still usable if something rendered; otherwise give up
+                    if not self.page.evaluate("() => !!(document.body && document.body.innerText.trim())"):
+                        raise
         self.settle()
 
     def settle(self, ms=500):

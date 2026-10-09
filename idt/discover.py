@@ -23,7 +23,7 @@ CANCEL = ("You are signed in and already have an active '{plan}'; do not sign up
 
 def discover(browser, url: str, readonly=False, max_pages=6) -> dict:
     tab = Tab(browser, url, readonly)
-    pages = []
+    pages, card_page = [], {}
     try:
         tab.goto(url)
         home = tab.snap()
@@ -51,8 +51,12 @@ def discover(browser, url: str, readonly=False, max_pages=6) -> dict:
         summary = "\n\n".join(
             f"PAGE {s['url']} (kind: {a['page_kind']})\n{s['text'][:700]}" for s, a in pages)
         # the product must be something the shopper can click: a product card if the site has any, else a content link
-        cards = list(dict.fromkeys(s["by_id"][c["id"]]["name"] for s, a in pages for c in a["product_cards"]
-                                   if not c["labelled_as_ad"] and s["by_id"][c["id"]]["name"]))
+        for s, a in pages:
+            for c in a["product_cards"]:
+                e = s["by_id"][c["id"]]
+                if not c["labelled_as_ad"] and e["name"] and not e["offsite"]:
+                    card_page.setdefault(e["name"], s["url"])
+        cards = list(card_page)
         options = cards or list(dict.fromkeys(e["name"] for s, _ in pages for e in s["elements"]
                                               if e["kind"] == "link" and e["region"] == "main" and e["name"]))[:60]
         schema = {**PLAN_SCHEMA, "properties": {**PLAN_SCHEMA["properties"], "product": {
@@ -78,8 +82,10 @@ def discover(browser, url: str, readonly=False, max_pages=6) -> dict:
     sub = plan.get("subscription") or {}
     journeys = []
     if prod.get("name"):
-        journeys.append({"type": "purchase", "intent": PURCHASE.format(product=prod["name"]),
-                         "start": prod.get("found_on") if prod.get("found_on") in seen else url, "product": prod["name"]})
+        # start where the shopper meets the product (its listing card), so the listing price is on record
+        start = card_page.get(prod["name"]) or (prod.get("found_on") if prod.get("found_on") in seen else url)
+        journeys.append({"type": "purchase", "intent": PURCHASE.format(product=prod["name"]), "start": start,
+                         "product": prod["name"]})
     if sub.get("exists") and sub.get("name") and not readonly:
         journeys.append({"type": "subscription", "plan": sub["name"], "start": url,
                          "join": JOIN.format(plan=sub["name"]), "cancel": CANCEL.format(plan=sub["name"]),

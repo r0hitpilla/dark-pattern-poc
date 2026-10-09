@@ -25,6 +25,8 @@ from idt.oracles import CCPA
 from shop.app import create_app as kartiq
 from shops.brewbox import create_app as brewbox
 from shops.voltaro import create_app as voltaro
+import inject
+from idt import perceive
 
 SHOPS = {"kartiq": ("Kartiq", kartiq), "brewbox": ("Brewbox", brewbox), "voltaro": ("Voltaro", voltaro)}
 REAL = ["https://automationexercise.com/", "https://www.demoblaze.com/", "https://practicesoftwaretesting.com/",
@@ -44,6 +46,8 @@ def main():
     ap.add_argument("--shops", default="kartiq,brewbox,voltaro")
     ap.add_argument("--real", action="store_true")
     ap.add_argument("--only-real", action="store_true")
+    ap.add_argument("--injected", action="store_true", help="real third-party sites with injected dark patterns")
+    ap.add_argument("--only-injected", action="store_true")
     ap.add_argument("--out", default="reports")
     a = ap.parse_args()
     logging.getLogger("werkzeug").setLevel(logging.ERROR)
@@ -53,7 +57,7 @@ def main():
     with sync_playwright() as p:
         browser = p.chromium.launch()
         port = 5400
-        for key in ([] if a.only_real else a.shops.split(",")):
+        for key in ([] if (a.only_real or a.only_injected) else a.shops.split(",")):
             name, factory = SHOPS[key]
             for mode in ("dark", "clean"):
                 port += 1
@@ -78,6 +82,30 @@ def main():
                         print(f"    false alarm detail: {f['title']} | {f['observed'][:200]}")
                 results.append(res)
                 srv.shutdown()
+        if a.injected or a.only_injected:
+            for site, cfg in inject.SITES.items():
+                for variant in ("dark", "honest", "clean"):
+                    h = inject.hook(site, variant)
+                    perceive.CONTEXT_HOOKS[:] = [h] if h else []
+                    label = f"{site} ({'injected dark' if variant == 'dark' else 'injected honest' if variant == 'honest' else 'as is'})"
+                    print(f"\n{label}")
+                    t = time.time()
+                    try:
+                        res = audit(browser, cfg["url"], readonly=True)
+                    except Exception as e:
+                        res = {"error": repr(e), "findings": [], "passes": []}
+                    truth = set(inject.truth(site, variant))
+                    found = {f["key"] for f in res["findings"]}
+                    res.update(name=label, shop=site, mode="injected-" + variant, truth=sorted(truth), found=sorted(found),
+                               tp=sorted(found & truth), fn=sorted(truth - found), fp=sorted(found - truth),
+                               seconds=round(time.time() - t))
+                    print(f"  found {len(found & truth)}/{len(truth)} injected · false alarms: {sorted(found - truth) or 'none'}"
+                          f" · missed: {sorted(truth - found) or 'none'} · {res['seconds']}s")
+                    for f in res["findings"]:
+                        if f["key"] not in truth:
+                            print(f"    false alarm detail: {f['title']} | {f['observed'][:200]}")
+                    results.append(res)
+            perceive.CONTEXT_HOOKS[:] = []
         if a.real or a.only_real:
             for url in REAL:
                 print(f"\n{url} (real site, read-only)")
@@ -91,7 +119,11 @@ def main():
                 results.append(res)
         browser.close()
 
-    scored = [r for r in results if r["mode"] != "real"]
+    scored = [r for r in results if r["mode"] in ("dark", "clean")]
+    inj = [r for r in results if r["mode"].startswith("injected")]
+    if inj:
+        itp, ifn, ifp = (sum(len(r[k]) for r in inj) for k in ("tp", "fn", "fp"))
+        print(f"\nInjected real sites: {itp}/{itp + ifn} injected patterns found, {ifp} false alarms across {len(inj)} runs")
     tp, fn, fp = (sum(len(r[k]) for r in scored) for k in ("tp", "fn", "fp"))
     stats = llm.stats()
     print(f"\nTotal: {tp}/{tp + fn} seeded patterns found, {fp} false alarms, across {len(scored)} shop variants "

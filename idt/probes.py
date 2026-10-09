@@ -5,8 +5,10 @@ quantity  : the page says "only N left": try to put N+2 in the basket. A shop th
 consent   : count what it takes to accept vs to refuse the cookie/consent banner, and whether refusal sticks.
 ads       : listing cards that lead to an advertiser or ad-click URL but are not labelled as ads.
 """
+import json
 import re
 import time
+from datetime import datetime
 
 from . import read
 from .agent import Careful
@@ -56,18 +58,81 @@ def temporal(browser, url: str, sessions=3, gap=4.0) -> dict:
     return out
 
 
+def clock(browser, url: str) -> dict | None:
+    """Jump the browser's own clock 3 hours ahead and reload. A real deadline stays where it was (or expires);
+    a countdown computed from 'now' starts again. Catches client-side evergreen timers without any back end."""
+    tab = Tab(browser, url)
+    try:
+        t0 = time.time()
+        tab.page.clock.install(time=datetime.fromtimestamp(t0))
+        tab.goto(url)
+        c1 = next((c for c in read.claims(tab.snap()["text"]) if c["kind"] == "countdown"), None)
+        if not c1:
+            return None
+        tab.page.clock.fast_forward("03:00:00")
+        tab.page.reload(wait_until="domcontentloaded")
+        tab.settle()
+        c2 = next((c for c in read.claims(tab.snap()["text"]) if c["kind"] == "countdown"), None)
+    finally:
+        tab.close()
+    d1 = t0 + _secs(c1["displayed_time"])
+    if not c2 or _secs(c2["displayed_time"]) == 0:
+        return {"url": url, "verdict": "expired", "before": c1["displayed_time"], "after": c2 and c2["displayed_time"]}
+    d2 = t0 + 3 * 3600 + _secs(c2["displayed_time"])
+    return {"url": url, "verdict": "restarts" if d2 - d1 > 60 else "fixed", "before": c1["displayed_time"],
+            "after": c2["displayed_time"], "moved_s": round(d2 - d1)}
+
+
+STOCK_KEY = re.compile(r"(stock|inventory|available_?(qty|quantity|units)?|quantity_?available|units_?(left|available)|qty)$", re.I)
+
+
+def site_data_stock(captured: list, item: str, claimed: int) -> dict | None:
+    """Look in the JSON the site's own pages downloaded for a stock figure for this product. The site's data is
+    the system of record we can see from outside."""
+    words = {w for w in re.findall(r"[a-z0-9]+", item.lower()) if len(w) > 2}
+
+    def walk(o, ctx):
+        if isinstance(o, dict):
+            names = " ".join(str(v).lower() for v in o.values() if isinstance(v, str))
+            here = ctx or (words and len(words & set(re.findall(r"[a-z0-9]+", names))) >= max(1, len(words) // 2))
+            for k, v in o.items():
+                if here and isinstance(v, (int, float)) and not isinstance(v, bool) and STOCK_KEY.search(k):
+                    yield k, v
+                yield from walk(v, here)
+        elif isinstance(o, list):
+            for v in o:
+                yield from walk(v, ctx)
+    for c in captured:
+        try:
+            data = json.loads(c["body"])
+        except Exception:
+            continue
+        for k, v in walk(data, False):
+            if v > claimed:
+                return {"url": c["url"], "field": k, "value": v, "claimed": claimed}
+    return None
+
+
 def quantity(browser, product_url: str, claimed: int, item: str, readonly=False) -> dict:
     want = claimed + 2
-    intent = (f"On this product page, set the quantity of '{item}' to {want} and add it to the basket, then open the "
-              f"basket. Decline every extra, offer and popup. Stop when you see the basket.")
-    j = run(browser, product_url, Careful(intent, readonly), readonly=readonly, max_steps=7)
+    intent = (f"Put {want} units of '{item}' in the basket: set the quantity to {want} if there is a quantity field, "
+              f"otherwise add it to the basket {want} times. Then open the basket. Decline every extra, offer and popup. "
+              f"Stop when you see the basket.")
+    j = run(browser, product_url, Careful(intent, readonly), readonly=readonly, max_steps=7 + want)
     qty, quote = None, ""
+    words = item.lower()
     for r in reversed(j["trace"]):
         if r["page_kind"] not in ("cart", "checkout", "order_review", "payment"):
             continue
-        lines = [p for p in r["prices"] if p["kind"] == "item" and p.get("quantity")]
-        if lines:
-            qty, quote = max(p["quantity"] for p in lines), lines[0]["label"]
+        lines = [p for p in r["prices"] if p["kind"] == "item" and p.get("in_order", True)]
+        withq = [p for p in lines if p.get("quantity")]
+        if withq:
+            qty, quote = max(p["quantity"] for p in withq), withq[0]["label"]
+            break
+        same_rows = [p for p in lines if read._grounded(p["label"], item) or read._grounded(item, p["label"]) or
+                     len(set(p["label"].lower().split()) & set(words.split())) >= 2]
+        if same_rows:      # carts that list one row per unit
+            qty, quote = len(same_rows), same_rows[0]["label"]
             break
     refused = [m for r in j["trace"] for m in r.get("refused", [])]
     # only conclusive if the field really held the requested quantity when the add-to-basket click happened

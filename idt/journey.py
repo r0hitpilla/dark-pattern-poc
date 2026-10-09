@@ -6,7 +6,7 @@ refused, and anything the site did by itself (downloads, redirects, new windows)
 """
 import re
 
-from . import read
+from . import read, vision
 from .perceive import Tab, PAY_RE, COMMIT_RE
 
 ERROR_RE = re.compile(r"\b(required|must|please (enter|select|tick|check|accept|agree)|cannot|can't|invalid|error|you need to|to continue)\b", re.I)
@@ -39,6 +39,7 @@ def run(browser, start_url: str, persona, *, readonly=False, max_steps=16, tab=N
     tab = tab or Tab(browser, start_url, readonly)
     tab.goto(start_url)
     trace, ledger, chose = [], {"item": None, "listing_card": None}, []
+    stalled, rescued = None, 0       # stalled = name of the last click that changed nothing
     reached, n_events, dismissed = "max_steps", 0, {}
     budget, step = max_steps, -1
     while budget > 0 and step < max_steps * 2:
@@ -51,6 +52,8 @@ def run(browser, start_url: str, persona, *, readonly=False, max_steps=16, tab=N
                "overlays": [sig(o["text"]) for o in snap["overlays"]], "overlay_text": [o["text"][:200] for o in snap["overlays"]],
                "prices": read.prices(snap) if (kind in PRICED_KINDS or gate) else [],
                "claims": read.claims(snap["text"]) if kind in CLAIM_KINDS else [],
+               # every amount written on the screen, parsed by code (not by the model)
+               "amounts": [a[0] for a in (read.money(m.group(0)) for m in read.MONEY_RE.finditer(snap["text"])) if a],
                "defaults": [{"id": e["id"], "name": e["name"], "question": e.get("question"), "kind": e["kind"], "checked": e["checked"]}
                             for e in snap["elements"] if e["checked"] is not None],
                "ann": ann, "shot": tab.shot(), "actions": [], "chose": [],
@@ -75,10 +78,14 @@ def run(browser, start_url: str, persona, *, readonly=False, max_steps=16, tab=N
             except Exception:
                 acts, j = persona.decide(snap, ann)     # one retry: a malformed model reply should not end the journey
         except Exception as e:
-            rec["actions"] = [f"persona error: {type(e).__name__}"]
-            trace.append(rec)
-            reached = "error"
-            break
+            # the text agent failed twice: let the vision model pick from the screenshot instead of giving up
+            r = vision.rescue(tab, snap, persona.intent, persona.history)
+            if not r or PAY_RE.match(snap["by_id"][r["id"]]["name"] or ""):
+                rec["actions"] = [f"persona error: {type(e).__name__}"]
+                trace.append(rec)
+                reached = "error"
+                break
+            acts, j = [{"do": "click", "id": r["id"]}], {"status": "continue", "reason": f"vision: {r['reason']}"}
         rec["reason"], rec["forced"] = j.get("reason", ""), j.get("forced", "")
         stop = None
         for a in acts:
@@ -114,6 +121,21 @@ def run(browser, start_url: str, persona, *, readonly=False, max_steps=16, tab=N
             trace.append(rec)
             reached = "done"
             break
+        repeat = stalled and any(a["do"] == "click" and snap["by_id"][a["id"]]["name"] == stalled for a in acts)
+        if (j.get("status") == "blocked" or not acts or repeat) and rescued < 4:
+            # stuck: first try Escape for an open popup, then let the vision model pick from the screenshot
+            if snap["overlays"] and stalled:
+                tab.page.keyboard.press("Escape")
+                tab.settle(200)
+            r = vision.rescue(tab, snap, persona.intent, persona.history)
+            if r and not PAY_RE.match(snap["by_id"][r["id"]]["name"] or "") and not (
+                    readonly and COMMIT_RE.search(snap["by_id"][r["id"]]["name"] or "")):
+                rescued += 1
+                acts, j = [{"do": "click", "id": r["id"]}], {**j, "status": "continue", "reason": f"vision: {r['reason']}"}
+                rec["reason"] = j["reason"]
+                persona.history.append(f"{snap['url']}: click {snap['by_id'][r['id']]['name']!r} (chosen from the screenshot)")
+                persona.clicks = {}
+        stalled = None
         if j.get("status") == "blocked" or not acts:
             rec["actions"] = [f"blocked: {j.get('reason', '')}"]
             trace.append(rec)
@@ -149,6 +171,7 @@ def run(browser, start_url: str, persona, *, readonly=False, max_steps=16, tab=N
                 same = False
             if same:
                 persona.history.append(f"NO EFFECT: clicking '{clicked_el['name']}' changed nothing on the page. Try a different control.")
+                stalled = clicked_el["name"]
         try:
             after_text = tab.page.evaluate("() => document.body.innerText")
         except Exception:

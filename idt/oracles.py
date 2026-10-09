@@ -74,6 +74,7 @@ def evaluate(a: dict) -> tuple[list, list]:
         out = []
         item = (j["ledger"].get("item") or {}).get("label", "")
         for r in j["trace"]:
+            items_here = [p for p in r["prices"] if p["kind"] == "item" and p.get("in_order", True)]
             if r["page_kind"] not in ("cart", "checkout", "order_review", "payment") and not r["actions"][0].startswith("STOP"):
                 continue
             for p in r["prices"]:
@@ -81,7 +82,9 @@ def evaluate(a: dict) -> tuple[list, list]:
                     continue
                 # another product counts only for the careful user, who adds nothing but its target; a hurried user
                 # can wander and add other products by its own click
-                other = p["kind"] == "item" and item and not same(p["label"], item, 0.4) and j["persona"] == "careful"
+                # an extra product next to the chosen one; a single, differently named product is a navigation mix-up
+                other = (p["kind"] == "item" and item and not same(p["label"], item, 0.4) and j["persona"] == "careful"
+                         and len(items_here) >= 2)
                 if p["kind"] == "addon" or other:
                     if p["amount"] > 0 and not any(same(p["label"], c, 0.4) for c in j["chose"]):
                         out.append((r, p))
@@ -106,37 +109,45 @@ def evaluate(a: dict) -> tuple[list, list]:
     elif pc:
         passes.append("No unchosen paid lines in the basket and no pre-selected paid extras.")
 
-    # ---------------- drip pricing: final payable vs price first shown
+    # ---------------- drip pricing: total at any later step vs price first shown
     if pc and pc["ledger"].get("item"):
         first = pc["ledger"]["item"]
-        prod = next((r for r in pc["trace"] if r["page_kind"] == "product"), None)
+        pi = next((i for i, r in enumerate(pc["trace"]) if r["page_kind"] == "product"), None)
+        prod = pc["trace"][pi] if pi is not None else None
         disclosed = [p for p in (prod["prices"] if prod else []) if p["kind"] in ("fee", "shipping", "tax")]
-        g = _gate(pc)
-        lines = g["prices"] if g else []
-        undisclosed = [p for p in lines if p["kind"] in ("fee", "shipping", "tax") and p["amount"] > 0
-                       and not any(abs(d["amount"] - p["amount"]) < 0.01 for d in disclosed)]
-        total = next((p for p in reversed(lines) if p["kind"] == "total"), None)
-        if undisclosed and total:
-            # the numbers must add up: a charge is only dripped if it raises the total above what was first shown
+        hit, last = None, None
+        for g in pc["trace"][(pi or 0) + 1:]:
+            lines = [p for p in g["prices"] if p.get("in_order", True)]
+            total = next((p for p in reversed(lines) if p["kind"] == "total"), None)
+            if not total:
+                continue
+            last = g
+            # disclosed = read as a fee on the product page, or the same amount written anywhere on it
+            shown = [d["amount"] for d in disclosed] + [x for x in (prod or {}).get("amounts", []) if abs(x - first["amount"]) > 0.01]
+            und = [p for p in lines if p["kind"] in ("fee", "shipping", "tax") and p["amount"] > 0
+                   and not any(abs(x - p["amount"]) < 0.01 for x in shown)]
             qty = next((p.get("quantity") for p in lines if p["kind"] == "item" and p.get("quantity")), 1) or 1
-            chosen_extra = sum(p["amount"] for p in lines if p["kind"] == "addon" and any(same(p["label"], c, 0.4) for c in pc["chose"]))
-            expected = first["amount"] * qty + sum(d["amount"] for d in disclosed) + chosen_extra \
+            chosen = sum(p["amount"] for p in lines if p["kind"] == "addon" and any(same(p["label"], c, 0.4) for c in pc["chose"]))
+            unchosen = sum(p["amount"] for p in lines if p["kind"] == "addon" and p["amount"] > 0 and not any(same(p["label"], c, 0.4) for c in pc["chose"]))
+            expected = first["amount"] * qty + sum(d["amount"] for d in disclosed) + chosen + unchosen \
                 - sum(p["amount"] for p in lines if p["kind"] == "discount")
-            if total["amount"] <= expected + 0.01:
-                undisclosed = []      # e.g. "including taxes £9.17": shown at checkout but already inside the price
-        if undisclosed:
+            # the numbers must add up: "including taxes £9.17" is shown late but is already inside the price
+            if und and total["amount"] > expected + 0.01:
+                hit = (g, und, total)
+                break
+        if hit:
+            g, undisclosed, total = hit
             fees = [p for p in undisclosed if p["kind"] == "fee"]
             fs.append(F("drip_pricing", "Proven" if fees else "Measured",
                         f"{cur(first)}{sum(p['amount'] for p in undisclosed):g} in charges appear only at {g['page_kind'].replace('_', ' ')}",
                         f"Price first shown: {fmt(first)}" + (f" + {', '.join(d['label'] + ' ' + fmt(d) for d in disclosed)}" if disclosed else "")
                         + " — every mandatory charge visible up front",
-                        f"At {g['url']}: " + ", ".join(f"{p['label']} {fmt(p)}" for p in undisclosed)
-                        + (f"; total payable {fmt(total)}" if total else ""),
+                        f"At {g['url']}: " + ", ".join(f"{p['label']} {fmt(p)}" for p in undisclosed) + f"; total payable {fmt(total)}",
                         [f"Not shown on the product page: {p['label']} {fmt(p)} ({p['kind']})" for p in undisclosed],
                         [prod and prod["shot"], g["shot"]],
-                        "Price-consistency oracle: every charge at the last priced step must have been shown with the first price"))
-        elif g:
-            passes.append(f"Every charge at the last priced step was shown with the first price ({fmt(first)}).")
+                        "Price-consistency oracle: every charge added to the total must have been shown with the first price"))
+        elif last:
+            passes.append(f"Every charge in the total was shown with the first price ({fmt(first)}).")
 
     # ---------------- bait and switch: listing vs product page vs basket
     if pc and pc["ledger"].get("listing_card") and pc["ledger"].get("item"):
@@ -163,7 +174,7 @@ def evaluate(a: dict) -> tuple[list, list]:
         sub_h = a.get("membership", {}).get("hurried") == "yes" and a.get("membership", {}).get("careful") != "yes"
         gap = (th["amount"] - tc["amount"] - sum(p["amount"] for p in fh if p["label"] in unchosen and p["kind"] != "total")
                if tc and th else 0)
-        if ph["chose"] and (extra or sub_h or gap > 0.01):
+        if ph["chose"] and (extra or sub_h):
             ev, shots = [], []
             for r in ph["trace"]:
                 offers = [r["ann"]["offers"], r["ann"]["declines"]]
@@ -314,17 +325,30 @@ def evaluate(a: dict) -> tuple[list, list]:
         passes.append("Dismissed popups stayed dismissed.")
 
     # ---------------- false urgency / scarcity
+    ck = next((c for c in a.get("clock", []) if c["verdict"] == "restarts"), None)
+    tm = next((t for t in a.get("temporal", []) if t.get("countdown", {}).get("verdict") == "moves"), None)
+    if ck and not tm:
+        fs.append(F("false_urgency", "Proven", "Countdown starts again when time moves on",
+                    "A deadline does not move when the clock does",
+                    f"With the browser clock moved 3 hours ahead, the countdown showed {ck['after']} again (was {ck['before']})",
+                    [f"Implied deadline moved {ck['moved_s']}s on {ck['url']}"], [], "Clock probe: browser time jumped forward"))
     for t in a.get("temporal", []):
         if t.get("countdown", {}).get("verdict") == "moves":
             c = t["countdown"]
             fs.append(F("false_urgency", "Proven", "Countdown restarts for each visitor", "A deadline is the same moment for everyone",
                         f"Implied deadline moved {c['spread_s']:.0f}s across {len(c['seen'])} fresh sessions {c['elapsed_s']:.0f}s apart",
                         [f"Timers seen: {', '.join(x for x in c['seen'] if x)} on {t['url']}"],
-                        [t["observations"][0]["shot"]], "Cross-session temporal consistency"))
+                        [t["observations"][0]["shot"]], "Cross-session temporal consistency"
+                        + (" + clock probe" if ck else "")))
             break
         if t.get("countdown"):
             passes.append(f"Countdown on {t['url']} points at one fixed deadline.")
     q = a.get("quantity")
+    sd = a.get("site_data_stock")
+    if sd and not (q and q["verdict"] == "accepted_more"):
+        fs.append(F("false_scarcity", "Proven", f"'Only {sd['claimed']} left', but the site's own data says {sd['value']:g}",
+                    f"The stock claim matches the site's data", f"{sd['field']} = {sd['value']:g} in {sd['url'][:120]}",
+                    ["Read from the JSON the product page itself downloaded"], [], "Site-data oracle"))
     if q and q["verdict"] == "accepted_more":
         fs.append(F("false_scarcity", "Proven", f"'Only {q['claimed']} left', but the shop accepted {q['in_basket']}",
                     f"No more than {q['claimed']} can be bought", f"Basket holds {q['in_basket']} × '{q['quote']}'",
@@ -346,7 +370,7 @@ def evaluate(a: dict) -> tuple[list, list]:
     # ---------------- rogue malware
     ev = [e for j in journeys for e in j["events"]] + [e for j in a.get("extra_events", []) for e in j]
     dls = [e for e in ev if e["type"] == "download" and (not e["after_user_action"] or e["executable"])]
-    fake = [(j, r) for j in journeys for r in j["trace"] if r["ann"]["fake_system_alert"]]
+    fake = [(j, r) for j in journeys for r in j["trace"] if r["ann"]["fake_system_alert"] and any(r["overlay_text"])]
     if dls or fake:
         e = dls[0] if dls else None
         fs.append(F("rogue_malware", "Proven" if e and not e["after_user_action"] else "Judged",

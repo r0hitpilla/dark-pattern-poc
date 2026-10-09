@@ -6,6 +6,15 @@ from .journey import run
 from .oracles import evaluate
 from . import probes
 
+
+def safe(log, name, fn, *args, **kw):
+    """Run one probe; a failure costs that probe, not the audit."""
+    try:
+        return fn(*args, **kw)
+    except Exception as e:
+        log(f"  · {name} failed: {type(e).__name__}")
+        return None
+
 MEMBER_Q = "Does this page show that the user currently has an active paid membership, subscription, or a free trial of one?"
 
 
@@ -46,14 +55,23 @@ def audit(browser, url: str, readonly=False, log=print) -> dict:
             if st:
                 a["membership"][who] = st["answer"]
         recs += c["trace"] + h["trace"]
-        claimed = [(r["url"], cl) for r in c["trace"] for cl in r["claims"] if cl["kind"] in ("countdown", "stock_count")]
+        claimed = [(r["url"].split("#")[0], cl) for r in c["trace"] for cl in r["claims"] if cl["kind"] in ("countdown", "stock_count")]
+        a["clock"] = []
+        for u in dict.fromkeys(u for u, cl in claimed if cl["kind"] == "countdown"):
+            log(f"  · clock probe: {u}")
+            ck = safe(log, "clock probe", probes.clock, browser, u)
+            if ck:
+                a["clock"].append(ck)
         for u in dict.fromkeys(u for u, _ in claimed):
             log(f"  · temporal probe: {u}")
-            a["temporal"].append(probes.temporal(browser, u))
+            t = safe(log, "temporal probe", probes.temporal, browser, u)
+            if t:
+                a["temporal"].append(t)
         stock = next(((u, cl) for u, cl in claimed if cl["kind"] == "stock_count"), None)
         if stock:
+            a["site_data_stock"] = probes.site_data_stock(c["tab"].json + h["tab"].json, pj["product"], stock[1]["units"])
             log(f"  · quantity probe: claimed {stock[1]['units']} left")
-            a["quantity"] = probes.quantity(browser, stock[0], stock[1]["units"], pj["product"], readonly)
+            a["quantity"] = safe(log, "quantity probe", probes.quantity, browser, stock[0], stock[1]["units"], pj["product"], readonly)
     sj = next((j for j in d["journeys"] if j["type"] == "subscription"), None)
     if sj:
         log(f"  · subscription journey: join and cancel '{sj['plan']}'")
@@ -68,7 +86,7 @@ def audit(browser, url: str, readonly=False, log=print) -> dict:
         a["subscription"] = {"join": join, "cancel": cancel}
         recs += join["trace"] + cancel["trace"]
     log("  · consent probe")
-    a["consent"] = probes.consent(browser, url)
+    a["consent"] = safe(log, "consent probe", probes.consent, browser, url)
     a["ads"] = probes.ads(recs)
     for t in tabs:
         t.close()

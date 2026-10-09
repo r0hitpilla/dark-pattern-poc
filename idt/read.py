@@ -160,8 +160,30 @@ def prices(snap: dict) -> list:
             out.append({"label": ln.get("label", "")[:80], "amount": amt[0], "currency": amt[1], "kind": ln["kind"],
                         "quantity": ln.get("quantity"), "period": ln.get("period"), "quote": ln["amount_text"],
                         "in_order": ln.get("in_order", True) is not False})
+    _reconcile(out)
     _cache[k] = out
     return out
+
+
+def _reconcile(lines):
+    """Let the arithmetic decide what is in the order: if the total only adds up when some lines the model called
+    'offered' are counted, those lines are in the order."""
+    total = next((p for p in reversed(lines) if p["kind"] == "total"), None)
+    if not total:
+        return
+    sign = {"discount": -1}
+    base = sum(sign.get(p["kind"], 1) * p["amount"] for p in lines
+               if p.get("in_order") and p["kind"] in ("item", "addon", "fee", "shipping", "discount"))
+    diff = round(total["amount"] - base, 2)
+    out = [p for p in lines if not p.get("in_order") and p["kind"] in ("addon", "fee", "shipping")][:8]
+    if abs(diff) < 0.01 or not out:
+        return
+    for mask in range(1, 1 << len(out)):
+        pick = [out[i] for i in range(len(out)) if mask >> i & 1]
+        if abs(sum(p["amount"] for p in pick) - diff) < 0.01:
+            for p in pick:
+                p["in_order"] = True
+            return
 
 
 # ------------------------------------------------------------------ claims

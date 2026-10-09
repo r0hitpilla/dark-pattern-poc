@@ -71,7 +71,7 @@ Three structurally different test shops, each with a dark and an honest version,
 | Brewbox (`shops/brewbox.py`) | $, no landmarks, div rows, cookie banner, custom popup, account checkout, card form | cookie interface interference, forced action, drip pricing, SaaS billing, subscription trap, nagging |
 | Voltaro (`shops/voltaro.py`) | `49,00 €`, search grid, sponsored results, radio consent | bait and switch, disguised ads, rogue malware, false scarcity, basket sneaking, trick question |
 
-Result (same code, zero site config, qwen3.5:35b-a3b on a DGX Spark, ~25 min cold):
+Result (same code, zero site config, qwen3.5:35b-a3b on a DGX Spark):
 
 ```
 Kartiq  (dark)    9/9 found    Kartiq  (honest)   0 false alarms
@@ -92,6 +92,42 @@ Read-only runs on real public test-automation shops (no ground truth; no finding
 The real-site runs found and fixed two false alarms during development: UK VAT shown at checkout read as drip
 pricing, and a hurried user's own wandering read as basket sneaking.
 
+### Independent check: dark patterns injected into real third-party sites
+
+The test shops were written alongside the engine. To test on markup nobody here wrote, `inject/` (a fixture the
+engine never imports) adds known dark patterns to real public test sites **inside our own browser only**:
+a resetting countdown, a fake "only 2 left", a hidden fee row, a pre-added protection line, a shaming decline,
+a nagging corner popup, unlabelled ad cards, a fake browser-update download, a double-negative consent box,
+discounted listing prices, and a newsletter box that blocks checkout. Each site is also run with **honest
+look-alikes** (a fixed deadline, a disclosed fee, labelled ads, an optional newsletter, a dismissal that sticks)
+and **as is**. Ground truth comes from the injection.
+
+| Site (not written by us) | Injected dark | Honest look-alikes | As is |
+|---|---|---|---|
+| practicesoftwaretesting.com (Angular SPA) | **11/11** | 0 false alarms | 0 false alarms |
+| sauce-demo.myshopify.com (Shopify) | **10/11** (missed: false scarcity) | 0 false alarms | 0 false alarms |
+| **Total** | **21/22** | **0** | **0** |
+
+Building this benchmark found real engine faults that the home-made shops had not shown, all fixed with general
+rules rather than per-site tuning:
+- a probe timeout aborted the whole audit (each probe now fails alone);
+- a fee row was misread as "not in the order" (the total must add up: the arithmetic decides);
+- a single differently-named basket item was read as sneaking (sneaking now needs an extra line);
+- small corner popups were not recognised;
+- one honest look-alike was itself steering (a huge "Yes" next to a tiny "No thanks"), and the engine flagged it.
+  That was a fault in the fixture, not the engine.
+
+Two of the twelve variants (Kartiq honest, sauce-demo honest) were re-run after their fixes; the other ten are
+from the full run just before.
+
+### Closing the gaps without a site's back end
+
+| Gap | Method |
+|---|---|
+| Navigation stalls on real widgets | **Vision fallback**: when a click changes nothing or the agent is stuck, the screenshot is shown to the local vision model with every control outlined and labelled (set-of-marks); it picks by what it sees. Escape is tried first for open popups. Browser-style autofill fills form fields from a test profile. |
+| Deadline claims | **Clock probe**: the browser's own clock is moved 3 hours ahead (Playwright clock). A real deadline stays put or expires; a countdown computed from "now" starts again. Complements the fresh-session probe, which catches server-side resets. |
+| Stock claims | **Site-data oracle**: the JSON the product page itself downloads is searched for a stock figure for that product; the site's own data contradicting "only N left" is evidence. Plus the quantity probe, which counts basket rows when there is no quantity field. |
+
 ### Run
 
 ```bash
@@ -99,6 +135,7 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 .venv/bin/python -m playwright install chromium
 .venv/bin/python bench.py                  # 3 shops × {dark, honest}; ~20–35 min cold on a DGX Spark
 .venv/bin/python bench.py --real           # + read-only audits of public test-automation shops
+.venv/bin/python bench.py --injected       # + real sites with injected dark patterns (dark / honest / as is)
 .venv/bin/python audit.py https://staging.example/            # audit any site you are authorised to test
 .venv/bin/python audit.py --readonly https://public.example/  # no accounts, no personal data, no subscriptions
 ```
@@ -128,8 +165,9 @@ attempt.
 
 ## Limits
 
-- **The test shops were written alongside the engine.** They differ in structure, wording, currency and
-  mechanism, and `idt/` never names them, but they are not independent of it. Real-site runs are the check.
+- **The test shops were written alongside the engine.** The injected real-site benchmark is the independent
+  check, but the injected patterns are also mine. Subscription trap, SaaS billing and steering by outcome cannot be
+  injected from the browser side; they are only covered by the local shops.
 - **Real-site navigation is the weak point.** See the benchmark section for how far each read-only journey got.
   Unusual widgets (in-page "added to cart" modals, accordions, login-gated checkouts) can stall the agent.
   A stalled journey produces no finding, not a false one.
