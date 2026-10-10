@@ -37,7 +37,7 @@ td.c{text-align:center}.scroll{overflow-x:auto}.scroll>table{min-width:680px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:12px 0}
 .card h4{margin:0 0 4px;font-size:16px}.meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
 .ccpa{font-size:12px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
-.eo{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:8px 0}.eo>div{min-width:0;border-left:3px solid var(--line);padding:2px 0 2px 10px}
+.eo{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:8px 0}.eo>div{min-width:0;overflow-wrap:anywhere;border-left:3px solid var(--line);padding:2px 0 2px 10px}
 .eo .o{border-color:var(--accent)}.eo small{display:block;color:var(--mute);font-size:11.5px;text-transform:uppercase;letter-spacing:.04em}
 ul.ev{margin:6px 0 0;padding-left:18px;overflow-wrap:anywhere}.shots{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
 .shots img{width:360px;max-width:100%;border:1px solid var(--line);border-radius:6px}
