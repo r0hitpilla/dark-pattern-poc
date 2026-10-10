@@ -34,7 +34,7 @@ td.c{text-align:center}.scroll{overflow-x:auto}.scroll>table{min-width:680px}
 .pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;font-weight:600;white-space:nowrap}
 .hit{background:var(--okbg);color:var(--ok)}.miss,.fp{background:var(--badbg);color:var(--bad)}.quiet{color:var(--mute)}
 .Proven{background:var(--okbg);color:var(--ok)}.Measured{background:var(--warnbg);color:var(--warn)}.Judged{background:var(--line);color:var(--ink)}
-.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:12px 0}
+.card{overflow-wrap:anywhere;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:12px 0}
 .card h4{margin:0 0 4px;font-size:16px}.meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
 .ccpa{font-size:12px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
 .eo{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:8px 0}.eo>div{min-width:0;overflow-wrap:anywhere;border-left:3px solid var(--line);padding:2px 0 2px 10px}
@@ -85,7 +85,7 @@ appear verbatim on the page, quotes must be found on the page, and control state
 {% if r.seconds %} · {{ r.seconds }} s{% endif %}{% if r.mode == 'real' %} · read-only{% endif %}</p>
 {% for f in r.findings %}<div class="card"><div class="meta"><span class="ccpa">{{ f.ccpa }}</span><span class="pill {{ f.strength }}">{{ f.strength }}</span>
 {% if r.truth is defined and r.mode != 'real' %}{% if f.key in r.tp %}<span class="pill hit">seeded</span>{% else %}<span class="pill fp">not seeded</span>{% endif %}{% endif %}</div>
-<h4>{{ f.title }}</h4><div class="eo"><div><small>Expected</small>{{ f.expected }}</div><div class="o"><small>Observed</small>{{ f.observed }}</div></div>
+<h4>{{ f.title|replace('_', ' ') }}</h4><div class="eo"><div><small>Expected</small>{{ f.expected }}</div><div class="o"><small>Observed</small>{{ f.observed }}</div></div>
 <ul class="ev">{% for e in f.evidence %}<li>{{ e }}</li>{% endfor %}</ul><div class="method">Method: {{ f.method }}</div>
 {% if f.shots %}<div class="shots">{% for s in f.shots %}<img alt="Evidence screenshot" src="data:image/jpeg;base64,{{ s }}">{% endfor %}</div>{% endif %}</div>
 {% else %}<p>No findings.</p>{% endfor %}

@@ -35,6 +35,7 @@ def same(a, b, th=0.5):
 
 
 def F(key, strength, title, expected, observed, evidence, shots=(), method=""):
+    title = re.sub(r"(?<=[a-z])_(?=[a-z])", " ", title)      # model phrases sometimes arrive as snake_case
     return {"key": key, "ccpa": CCPA[key], "strength": strength, "title": title, "expected": expected, "observed": observed,
             "evidence": [e for e in evidence if e], "shots": [s for s in shots if s][:2], "method": method}
 
