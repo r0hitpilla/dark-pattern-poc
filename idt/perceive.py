@@ -261,7 +261,12 @@ class Tab:
         return s
 
     def shot(self) -> str:
-        return base64.b64encode(self.page.screenshot(type="jpeg", quality=55)).decode()
+        """Evidence screenshot. Every caller already drops a falsy shot from its evidence list, so a capture
+        that times out (a slow-loading font, a stuck paint) costs that one screenshot, not the whole journey."""
+        try:
+            return base64.b64encode(self.page.screenshot(type="jpeg", quality=55, timeout=10000)).decode()
+        except Exception:
+            return ""
 
     def _loc(self, eid):
         return self.page.locator(f"[data-idt='{eid}']").first
