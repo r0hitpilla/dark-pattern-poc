@@ -142,6 +142,27 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 
 Output is `reports/idt_report.html` (evidence report with screenshots) and `reports/idt_findings.json`.
 
+## Organisation-level audits (`org_audit.py`)
+
+For an organisation with several sites, audit all of them and roll the results up into one report for
+compliance/legal review, instead of reading one HTML file per site. It calls the same `idt.audit.audit()`
+as `audit.py` — unchanged, still URL-in, still LLM-navigated, no per-site scripting — once per configured
+site, then adds an executive summary on top: findings by CCPA category (with which sites triggered each),
+sites ranked worst-first by finding count and strength, and the same per-site evidence sections underneath
+for drill-down.
+
+```bash
+cp orgs.example.json orgs.json              # edit: organisation name -> list of {label, url} sites
+.venv/bin/python org_audit.py --config orgs.json              # full audits (staging/UAT with test accounts)
+.venv/bin/python org_audit.py --config orgs.json --readonly    # no accounts, no personal data, no subscriptions
+.venv/bin/python org_audit.py --config orgs.json --org "Acme Corp"   # just one organisation from the file
+```
+
+Output per organisation is `reports/org_<slug>_report.html` and `reports/org_<slug>_findings.json`; with more
+than one organisation in the config, `reports/org_index.html` links all of them. A site that fails to audit
+(network error, unexpected layout) is reported, not silently dropped — it shows as an error entry rather than
+a false "no findings".
+
 ## Scripted engine (`harness/`, v1)
 
 The original POC: one shop, scripted personas, plus two single-screen baselines for comparison (lexical, and a

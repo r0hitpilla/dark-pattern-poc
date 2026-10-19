@@ -1,0 +1,17 @@
+{
+    "orgs": [
+        {
+            "name": "Acme Corp",
+            "sites": [
+                {"label": "Acme Shop (flagship)", "url": "https://shop.acme.example/"},
+                {"label": "Acme Pro (SaaS)", "url": "https://pro.acme.example/"}
+            ]
+        },
+        {
+            "name": "Beta Retail",
+            "sites": [
+                {"label": "Beta Marketplace", "url": "https://beta-retail.example/"}
+            ]
+        }
+    ]
+}
